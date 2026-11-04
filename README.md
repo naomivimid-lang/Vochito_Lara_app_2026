@@ -172,9 +172,13 @@ Esta versión está enfocada en la adaptación del sistema Vochito a Laravel y e
 
 La práctica contempla el uso de vistas Blade, rutas web, controladores y operaciones CRUD, utilizando datos de prueba y sin implementar una conexión a una base de datos.
 
-## 👩‍💻 Autores
+## 👩‍💻 Equipo
 
-Proyecto académico desarrollado de manera colaborativa por el equipo de Vochito.
+Vital Millán Dayra Naomi
+Guerrero López Miguel Ángel
+Carpio Campos Rodrigo
+Ortiz Salguero Geazul Guadalupe
+Lorenzana Hernández Aarón Dahir
 
 ## Evidencia
 
