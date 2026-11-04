@@ -84,7 +84,7 @@ function alEnviarLogin(e) {
     guardarBloqueo({ intentos: 0, hasta: 0 });
     Bochito.iniciarSesion({ correo: USUARIO_DEMO.correo });
     mostrarAlerta("Acceso correcto. Redirigiendo...", "success");
-    setTimeout(() => (window.location.href = "pedidos.html"), 600);
+    setTimeout(() => (window.location.href = "/pedidos"), 600);
     return;
   }
 
@@ -110,5 +110,5 @@ contrasena.addEventListener("input", validarCampoEnVivo);
 contrasena.addEventListener("blur", validarCampoEnVivo);
 
 // Si ya hay sesión, ir directo a pedidos
-if (Bochito.getSesion()) window.location.href = "pedidos.html";
+if (Bochito.getSesion()) window.location.href = "/pedidos";
 actualizarEstadoFormulario();
