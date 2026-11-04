@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Ayuda - Bochito Envíos y Ventas</title>
+
+  <!-- BOOTSTRAP 5.0.2 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <!-- Fuentes de Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Iconos de FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- CSS PERSONALIZADO: DEBE IR DESPUÉS DE BOOTSTRAP -->
+  <link rel="stylesheet" href="css/estilos.css" />
+    <link rel="stylesheet" href="css/ayuda.css">
+    <link rel="stylesheet" href="css/utilidades.css">
+    <link rel="stylesheet" href="css/tema.css">
+    <script src="js/tema.js"></script>
+</head>
+
+<body>
+
+  <!-- BARRA DE NAVEGACIÓN PRINCIPAL -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
+      <div class="container">
+        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="index.html">
+          <img src="img/logo.png" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top" />
+          <div class="d-flex flex-column lh-sm">
+            <span><i class="fa-solid fa-leaf"></i> Bochito</span>
+            <small>Comercio local</small>
+          </div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-lg-center">
+            <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="nosotros.html"><i class="fa-solid fa-users"></i> Nosotros</a></li>
+            <li class="nav-item"><a class="nav-link" href="servicios.html"><i class="fa-solid fa-store"></i> Servicios</a></li>
+            <li class="nav-item"><a class="nav-link" href="catalogo.html"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
+            <li class="nav-item"><a class="nav-link" href="busquedas.html"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="pedidos.html"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
+                <li><a class="dropdown-item" href="productos.html"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
+                <li><a class="dropdown-item" href="historial.html"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
+                <li><a class="dropdown-item" href="notificaciones.html"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="incidencias.html"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
+                <li><a class="dropdown-item" href="evidencias.html"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
+                <li><a class="dropdown-item" href="cancelacion.html"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
+                <li><a class="dropdown-item" href="modificacion.html"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
+                <li><a class="dropdown-item" href="reporte_desempeno.html"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
+              </ul>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="contacto.html"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
+            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="iniciosesion.html"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <div class="main-layout">
+
+    <!-- BARRA LATERAL -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="icon-circle icon-dark-teal">
+          <i class="fa-solid fa-life-ring"></i>
+        </div>
+        <h2>Ayuda al usuario</h2>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li class="active">
+          <div class="icon-circle icon-light-green">
+            <i class="fa-solid fa-circle-question"></i>
+          </div>
+          <span>Preguntas frecuentes</span>
+        </li>
+
+        <li>
+          <div class="icon-circle icon-soft-blue">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <a class="text-reset" href="catalogo.html">Catálogo de productos</a>
+        </li>
+
+        <li>
+          <div class="icon-circle icon-soft-pink">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <a class="text-reset" href="privacidad.html">Política de privacidad</a>
+        </li>
+
+        <li>
+          <div class="icon-circle icon-soft-orange">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <a class="text-reset" href="contacto.html">Contacto de soporte</a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="content-area">
+
+      <h1 class="page-title">Centro de ayuda</h1>
+
+      <p class="page-subtitle">
+        Aquí encontrarás respuestas a las preguntas más comunes.
+        Si no encuentras lo que necesitas, puedes contactarnos
+        en la sección de soporte.
+      </p>
+
+      <!-- PREGUNTAS FRECUENTES -->
+      <section class="faq-section">
+        <h2 class="section-title">Preguntas frecuentes</h2>
+
+        <div class="accordion">
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span>¿Cómo inicio sesión?</span>
+              <i class="fa-solid fa-plus icon-toggle"></i>
+            </summary>
+            <div class="accordion-content">
+              <p>Haz clic en "Iniciar sesión" en el menú y escribe tu correo y contraseña. Por seguridad, la cuenta se bloquea 5 minutos después de 5 intentos fallidos.</p>
+            </div>
+          </details>
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span>¿Cómo encuentro productos de tiendas locales?</span>
+              <i class="fa-solid fa-plus icon-toggle"></i>
+            </summary>
+            <div class="accordion-content">
+              <p>Entra a Catálogo para verlos por categoría, o a Búsquedas para filtrarlos por nombre, tienda, categoría o precio.</p>
+            </div>
+          </details>
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span>¿Cómo doy seguimiento a mi pedido?</span>
+              <i class="fa-solid fa-plus icon-toggle"></i>
+            </summary>
+            <div class="accordion-content">
+              <p>En Pedidos &gt; Estatus y búsqueda puedes buscarlo por orden de compra (PO), rango de fechas o estatus. Tus pedidos anteriores están en Pedidos &gt; Historial.</p>
+            </div>
+          </details>
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span>¿Puedo cancelar o modificar mi pedido?</span>
+              <i class="fa-solid fa-plus icon-toggle"></i>
+            </summary>
+            <div class="accordion-content">
+              <p>Sí, mientras el pedido no haya sido embarcado (antes del estatus "En tránsito"). Usa Cancelar pedido o Modificar pedido en el menú Pedidos.</p>
+            </div>
+          </details>
+          <details class="accordion-item">
+            <summary class="accordion-header">
+              <span>¿Qué hago si mi pedido tiene un problema?</span>
+              <i class="fa-solid fa-plus icon-toggle"></i>
+            </summary>
+            <div class="accordion-content">
+              <p>Registra una incidencia con su causa y la nueva fecha estimada, o escríbenos desde la página de Contacto.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- TARJETA DE SOPORTE -->
+      <div class="support-card">
+        <div class="support-info">
+          <div class="icon-circle icon-support-large">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+
+          <div>
+            <h3>¿Necesitas más ayuda?</h3>
+            <p>
+              Si no encontraste lo que buscabas, puedes contactarnos
+              directamente. Estamos para ayudarte.
+            </p>
+          </div>
+        </div>
+
+        <a class="btn-support text-decoration-none" href="contacto.html">
+          <i class="fa-solid fa-envelope"></i>
+          Contactar soporte
+        </a>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- PIE DE PÁGINA -->
+  <section class="footer-banner">
+
+    <div class="footer-item">
+      <div class="icon-circle icon-footer-blue">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div>
+        <h4>Compra y vende con confianza</h4>
+        <p>Tu seguridad es nuestra prioridad.</p>
+      </div>
+    </div>
+
+    <div class="footer-item">
+      <div class="icon-circle icon-footer-green">
+        <i class="fa-solid fa-leaf"></i>
+      </div>
+      <div>
+        <h4>Apoyamos lo local</h4>
+        <p>Juntos impulsamos a nuestros productores.</p>
+      </div>
+    </div>
+
+    <div class="footer-item">
+      <div class="icon-circle icon-footer-orange">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div>
+        <h4>Somos comunidad</h4>
+        <p>Más que una plataforma, somos raíces.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- JAVASCRIPT DE BOOTSTRAP 5.0.2 -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <footer class="bg-custom-dark text-white text-center py-3 mt-auto">
+      <div class="container">
+        <p class="small mb-2">
+          <a class="link-light" href="ayuda.html">Ayuda</a> ·
+          <a class="link-light" href="privacidad.html">Privacidad</a> ·
+          <a class="link-light" href="rnf.html">Requerimientos no funcionales</a>
+        </p>
+        <p class="mb-0 small">&copy; 2026 Bochito - Envíos y Ventas. Todos los derechos reservados.</p>
+      </div>
+    </footer>
+</body>
+</html>

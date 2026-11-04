@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nosotros - Bochito Envíos y Ventas</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/estilos.css" />
+    <link rel="stylesheet" href="css/nosotros.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/utilidades.css">
+    <link rel="stylesheet" href="css/tema.css">
+    <script src="js/tema.js"></script>
+  </head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
+      <div class="container">
+        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="index.html">
+          <img src="img/logo.png" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top" />
+          <div class="d-flex flex-column lh-sm">
+            <span><i class="fa-solid fa-leaf"></i> Bochito</span>
+            <small>Comercio local</small>
+          </div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar menú">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-lg-center">
+            <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="nosotros.html"><i class="fa-solid fa-users"></i> Nosotros</a></li>
+            <li class="nav-item"><a class="nav-link" href="servicios.html"><i class="fa-solid fa-store"></i> Servicios</a></li>
+            <li class="nav-item"><a class="nav-link" href="catalogo.html"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
+            <li class="nav-item"><a class="nav-link" href="busquedas.html"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="pedidos.html"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
+                <li><a class="dropdown-item" href="productos.html"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
+                <li><a class="dropdown-item" href="historial.html"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
+                <li><a class="dropdown-item" href="notificaciones.html"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="incidencias.html"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
+                <li><a class="dropdown-item" href="evidencias.html"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
+                <li><a class="dropdown-item" href="cancelacion.html"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
+                <li><a class="dropdown-item" href="modificacion.html"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
+                <li><a class="dropdown-item" href="reporte_desempeno.html"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
+              </ul>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="contacto.html"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
+            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="iniciosesion.html"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+
+        <section class="presentacion">
+
+            <div class="texto">
+
+                <p class="subtitulo">CONÓCENOS</p>
+
+                <h1>Sobre nosotros</h1>
+
+                <p>
+                    Bochito es un marketplace local creado para conectar
+                    a compradores con pequeños comerciantes, negocios y vendedores
+                    de nuestra comunidad.
+                </p>
+
+                <p>
+                    Nuestro proyecto busca promover el comercio local y facilitar
+                    que más personas puedan conocer y adquirir productos de nuestra región.
+                </p>
+
+            </div>
+
+            <div class="icono-principal">
+                <i class="fa-solid fa-people-group"></i>
+            </div>
+
+        </section>
+
+
+        <section class="informacion">
+
+            <div class="tarjeta">
+
+                <div class="icono">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+
+                <h2>Historia</h2>
+
+                <p>
+                    Bochito surge como una propuesta para apoyar a los
+                    pequeños comerciantes y vendedores locales mediante una
+                    plataforma sencilla y accesible.
+                </p>
+            </div>
+
+            <div class="tarjeta">
+                <div class="icono">
+                    <i class="fa-solid fa-bullseye"></i>
+                </div>
+                <h2>Objetivo</h2>
+                <p>
+                    Crear un espacio digital donde los comerciantes puedan mostrar
+                    sus productos y los usuarios puedan encontrarlos y comprarlos fácilmente.
+                </p>
+            </div>
+
+            <div class="tarjeta">
+
+                <div class="icono">
+                    <i class="fa-solid fa-flag"></i>
+                </div>
+
+                <h2>Misión</h2>
+
+                <p>
+                    Conectar a compradores y vendedores locales, promoviendo el
+                    comercio responsable y fortaleciendo la economía de nuestra comunidad.
+                </p>
+
+            </div>
+
+
+            <div class="tarjeta">
+
+                <div class="icono">
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+
+                <h2>Visión</h2>
+
+                <p>
+                    Ser una plataforma reconocida por impulsar el comercio local
+                    y brindar nuevas oportunidades a pequeños negocios y comerciantes.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="proyecto">
+
+            <div class="proyecto-icono">
+                <i class="fa-solid fa-handshake"></i>
+            </div>
+
+            <div>
+
+                <p class="subtitulo">NUESTRO PROYECTO</p>
+
+                <h2>Conectamos lo local con lo digital</h2>
+
+                <p>
+                    Bochito busca que los productos de nuestra comunidad
+                    tengan un espacio para darse a conocer, facilitando la conexión
+                    entre vendedores y compradores.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="valores">
+
+            <h2>Lo que buscamos promover</h2>
+
+            <div class="valores-contenedor">
+
+                <div class="valor">
+
+                    <i class="fa-solid fa-shop"></i>
+
+                    <h3>Comercio local</h3>
+
+                    <p>
+                        Apoyar a pequeños negocios y comerciantes.
+                    </p>
+
+                </div>
+
+
+                <div class="valor">
+
+                    <i class="fa-solid fa-heart"></i>
+
+                    <h3>Compra responsable</h3>
+
+                    <p>
+                        Promover el consumo de productos de nuestra comunidad.
+                    </p>
+
+                </div>
+
+
+                <div class="valor">
+
+                    <i class="fa-solid fa-people-group"></i>
+
+                    <h3>Comunidad</h3>
+
+                    <p>
+                        Crear conexiones entre compradores y vendedores.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer class="bg-custom-dark text-white text-center py-3 mt-auto">
+      <div class="container">
+        <p class="small mb-2">
+          <a class="link-light" href="ayuda.html">Ayuda</a> ·
+          <a class="link-light" href="privacidad.html">Privacidad</a> ·
+          <a class="link-light" href="rnf.html">Requerimientos no funcionales</a>
+        </p>
+        <p class="mb-0 small">&copy; 2026 Bochito - Envíos y Ventas. Todos los derechos reservados.</p>
+      </div>
+    </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
