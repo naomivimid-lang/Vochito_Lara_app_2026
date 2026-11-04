@@ -64,7 +64,7 @@ const Bochito = (() => {
   /** Si no hay sesión, manda a iniciosesion.html. Devuelve el usuario o null. */
   function requerirSesion() {
     const s = getSesion();
-    if (!s) { window.location.href = "iniciosesion.html"; return null; }
+    if (!s) { window.location.href = "/iniciar-sesion"; return null; }
     return s;
   }
 
@@ -100,7 +100,7 @@ const Bochito = (() => {
     /** Evento click: cierra la sesión y vuelve al inicio de sesión. */
     function alCerrarSesion() {
       cerrarSesion();
-      window.location.href = "iniciosesion.html";
+      window.location.href = "/iniciar-sesion";
     }
     if (salir) salir.addEventListener("click", alCerrarSesion);
   }
