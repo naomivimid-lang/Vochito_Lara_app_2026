@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="css/estilos.css" />
     <link rel="stylesheet" href="css/utilidades.css">
-    <link rel="stylesheet" href="css/tema.css">
-    <script src="js/tema.js"></script>
+    <script src="{{ asset('js/tema.js') }}"></script>
   </head>
   <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
@@ -175,7 +174,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/datos.js"></script>
-    <script src="js/pedidos.js"></script>
+    <script src="{{ asset('js/datos.js') }}"></script>
+    <script src="{{ asset('js/pedidos.js') }}"></script>
   </body>
 </html>
