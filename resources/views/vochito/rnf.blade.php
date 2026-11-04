@@ -17,7 +17,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
       <div class="container">
-        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="index.html">
+        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{{ route('vochito.inicio') }}">
           <img src="img/logo.png" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top" />
           <div class="d-flex flex-column lh-sm">
             <span><i class="fa-solid fa-leaf"></i> Bochito</span>
@@ -29,28 +29,28 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-lg-center">
-            <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li class="nav-item"><a class="nav-link" href="nosotros.html"><i class="fa-solid fa-users"></i> Nosotros</a></li>
-            <li class="nav-item"><a class="nav-link" href="servicios.html"><i class="fa-solid fa-store"></i> Servicios</a></li>
-            <li class="nav-item"><a class="nav-link" href="catalogo.html"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
-            <li class="nav-item"><a class="nav-link" href="busquedas.html"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.nosotros') }}"><i class="fa-solid fa-users"></i> Nosotros</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.servicios') }}"><i class="fa-solid fa-store"></i> Servicios</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.catalogo') }}"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="pedidos.html"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
-                <li><a class="dropdown-item" href="productos.html"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
-                <li><a class="dropdown-item" href="historial.html"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
-                <li><a class="dropdown-item" href="notificaciones.html"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.pedidos') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.productos') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.historial') }}"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.notificaciones') }}"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
                 <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="incidencias.html"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
-                <li><a class="dropdown-item" href="evidencias.html"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
-                <li><a class="dropdown-item" href="cancelacion.html"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
-                <li><a class="dropdown-item" href="modificacion.html"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
-                <li><a class="dropdown-item" href="reporte_desempeno.html"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.incidencias') }}"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.evidencias') }}"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.cancelacion') }}"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.modificacion') }}"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
+                <li><a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
               </ul>
             </li>
-            <li class="nav-item"><a class="nav-link" href="contacto.html"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
-            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="iniciosesion.html"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
+            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
           </ul>
         </div>
       </div>
@@ -76,7 +76,7 @@
                         <span class="etiqueta">RNF01</span>
                         <h2>Tiempos de respuesta</h2>
                         <p>Las consultas de estado y trazabilidad de pedidos deben responder en 2 segundos o menos con carga normal.</p>
-                        <a class="btn btn-bochito" href="tiempo_respuesta.html">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
+                        <a class="btn btn-bochito" href="{{ route('vochito.tiempo_respuesta') }}">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
                     </div>
                 </article>
             </div>
@@ -88,7 +88,7 @@
                         <span class="etiqueta">RNF03</span>
                         <h2>Alta disponibilidad</h2>
                         <p>El sistema busca mantener sus servicios disponibles y recuperarse ante interrupciones.</p>
-                        <a class="btn btn-bochito" href="RNF03.html">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
+                        <a class="btn btn-bochito" href="{{ route('vochito.rnf03') }}">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
                     </div>
                 </article>
             </div>
@@ -100,7 +100,7 @@
                         <span class="etiqueta">RNF04</span>
                         <h2>Tolerancia a fallos</h2>
                         <p>Si se pierde la comunicación con las APIs de transportistas, las peticiones se encolan y se reintentan sin perder datos.</p>
-                        <a class="btn btn-bochito" href="RNF04.html">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
+                        <a class="btn btn-bochito" href="{{ route('vochito.rnf04') }}">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
                     </div>
                 </article>
             </div>
@@ -112,7 +112,7 @@
                         <span class="etiqueta">RNF05</span>
                         <h2>Cifrado en tránsito y en reposo</h2>
                         <p>La información sensible viaja cifrada con TLS 1.3 y la base de datos se cifra con AES-256.</p>
-                        <a class="btn btn-bochito" href="RNF05.html">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
+                        <a class="btn btn-bochito" href="{{ route('vochito.rnf05') }}">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
                     </div>
                 </article>
             </div>
@@ -124,7 +124,7 @@
                         <span class="etiqueta">RNF06</span>
                         <h2>Políticas de contraseñas y accesos</h2>
                         <p>Contraseñas de mínimo 12 caracteres con letras, números y símbolos, y bloqueo tras 5 intentos fallidos.</p>
-                        <a class="btn btn-bochito" href="RNF06.html">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
+                        <a class="btn btn-bochito" href="{{ route('vochito.rnf06') }}">Ver requerimiento <i class="bi bi-arrow-right"></i></a>
                     </div>
                 </article>
             </div>
@@ -139,9 +139,9 @@
     <footer class="bg-custom-dark text-white text-center py-3 mt-auto">
       <div class="container">
         <p class="small mb-2">
-          <a class="link-light" href="ayuda.html">Ayuda</a> ·
-          <a class="link-light" href="privacidad.html">Privacidad</a> ·
-          <a class="link-light" href="rnf.html">Requerimientos no funcionales</a>
+          <a class="link-light" href="{{ route('vochito.ayuda') }}">Ayuda</a> ·
+          <a class="link-light" href="{{ route('vochito.privacidad') }}">Privacidad</a> ·
+          <a class="link-light" href="{{ route('vochito.rnf') }}">Requerimientos no funcionales</a>
         </p>
         <p class="mb-0 small">&copy; 2026 Bochito - Envíos y Ventas. Todos los derechos reservados.</p>
       </div>
