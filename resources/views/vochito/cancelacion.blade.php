@@ -161,7 +161,7 @@
                 ></textarea>
               </div>
               <button type="submit" class="btn btn-teal w-100 py-2 fw-bold">
-                Confirmar Cancelación
+                Confirmar la Cancelación
               </button>
             </form>
             <div id="avisoSolicitud" class="d-none" role="status"></div>
