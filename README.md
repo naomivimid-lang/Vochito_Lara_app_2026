@@ -135,11 +135,7 @@ php artisan serve
 
 **7. Abrir el proyecto**
 
-En el navegador ingresa a:
-
-```text
-http://127.0.0.1:8000
-```
+En el navegador ingresa al enlace que te muestre el resultado del php
 
 ## 🌐 Rutas principales
 
@@ -181,7 +177,7 @@ La práctica contempla el uso de vistas Blade, rutas web, controladores y operac
 - Lorenzana Hernández Aarón Dahir
 
 ## Evidencia
-
+![Imagen del proyecto](public/img/fff1.png)
 ---
 
 **Vochito Laravel – Proyecto académico 2026.**
