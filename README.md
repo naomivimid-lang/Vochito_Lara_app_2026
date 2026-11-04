@@ -177,7 +177,8 @@ La práctica contempla el uso de vistas Blade, rutas web, controladores y operac
 - Lorenzana Hernández Aarón Dahir
 
 ## Evidencia
-![Imagen del proyecto](public/img/fff1.png)
----
 
+## ![Imagen del proyecto](public/img/fff1.png)
+
+![Imagen del Proyecto](<Captura de pantalla 2026-11-04 145333.png>)
 **Vochito Laravel – Proyecto académico 2026.**
