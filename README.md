@@ -87,7 +87,7 @@ Uno de los propósitos principales de este proyecto es aplicar las operaciones C
 | GET         | Leer       | Consultar información.          |
 | POST        | Crear      | Registrar nuevos elementos.     |
 | PUT         | Actualizar | Modificar registros existentes. |
-| DELETE      | Eliminar   | Borrar registros.               |
+| DELETE      | Cancelar   | Cancelar pedidos.               |
 
 La práctica busca demostrar estas operaciones utilizando las herramientas de Laravel, sus rutas y vistas Blade, sin depender de una base de datos en esta etapa del proyecto.
 
