@@ -2,6 +2,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\IncidenciaController;
 
 // Página principal
 Route::get('/', function () {
@@ -17,8 +18,10 @@ Route::view('/pedidos', 'vochito.pedidos')->name('vochito.pedidos');
 Route::view('/productos', 'vochito.productos')->name('vochito.productos');
 Route::view('/historial', 'vochito.historial')->name('vochito.historial');
 Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
-Route::view('/incidencias', 'vochito.incidencias')->name('vochito.incidencias');
-Route::view('/evidencias', 'vochito.evidencias')->name('vochito.evidencias');
+Route::get('/incidencias', [IncidenciaController::class, 'index'])->name('vochito.incidencias');
+Route::post('/incidencias', [IncidenciaController::class, 'store'])->name('incidencias.store');
+Route::put('/incidencias/{id}', [IncidenciaController::class, 'update'])->name('incidencias.update');
+Route::delete('/incidencias/{id}', [IncidenciaController::class, 'destroy'])->name('incidencias.destroy');Route::view('/evidencias', 'vochito.evidencias')->name('vochito.evidencias');
 Route::view('/cancelacion', 'vochito.cancelacion')->name('vochito.cancelacion');
 Route::view('/modificacion', 'vochito.modificacion')->name('vochito.modificacion');
 Route::view('/reporte-desempeno', 'vochito.reporte_desempeno')->name('vochito.reporte_desempeno');
