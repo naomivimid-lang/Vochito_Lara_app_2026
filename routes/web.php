@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IncidenciaController;
+use App\Http\Controllers\NotificacionController;
 
 // Página principal
 Route::get('/', function () {
@@ -36,3 +37,8 @@ Route::view('/rnf06', 'vochito.RNF06')->name('vochito.rnf06');
 Route::view('/tiempo-respuesta', 'vochito.tiempo_respuesta')->name('vochito.tiempo_respuesta');
 Route::view('/iniciar-sesion', 'vochito.iniciosesion')->name('vochito.iniciosesion');
 Route::view('/indice', 'vochito.index')->name('vochito.index');
+// CRUD de Notificaciones
+Route::get('/notificaciones', [NotificacionController::class, 'index']) ->name('vochito.notificaciones');
+Route::post('/notificaciones', [NotificacionController::class, 'store'])->name('notificaciones.store');
+Route::put('/notificaciones/{id}', [NotificacionController::class, 'update'])->name('notificaciones.update');
+Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
