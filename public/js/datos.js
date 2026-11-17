@@ -105,7 +105,7 @@ const Bochito = (() => {
   // ---- Solicitudes (Cancelaciones y Modificaciones) ----
   function getSolicitudes(tipo = null) {
     let lista = leer(localStorage, CLAVE_SOLICITUDES);
-    if (!Array.isArray(lista)) {
+    if (!Array.isArray(lista) || lista.length === 0) {
       lista = structuredClone(SOLICITUDES_INICIALES);
       guardar(localStorage, CLAVE_SOLICITUDES, lista);
     }

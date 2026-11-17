@@ -134,16 +134,20 @@ class SolicitudController extends Controller
         }
 
         // Si la tabla no está creada aún en SQLite/MySQL
-        return response()->json([
-            'success' => true,
-            'message' => "Solicitud registrada correctamente para la orden {$po} (modo demo).",
-            'solicitud' => array_merge($validated, [
-                'id' => time(),
-                'po' => $po,
-                'estado' => 'Pendiente',
-                'created_at' => now()->toIso8601String(),
-            ])
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Solicitud registrada correctamente para la orden {$po} (modo demo).",
+                'solicitud' => array_merge($validated, [
+                    'id' => time(),
+                    'po' => $po,
+                    'estado' => 'Pendiente',
+                    'created_at' => now()->toIso8601String(),
+                ])
+            ]);
+        }
+
+        return back()->with('success', "Solicitud registrada correctamente para la orden {$po}.");
     }
 
     /**

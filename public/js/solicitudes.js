@@ -5,45 +5,108 @@
 document.addEventListener("DOMContentLoaded", () => {
   const formSolicitud = document.getElementById("formSolicitud");
   const avisoSolicitud = document.getElementById("avisoSolicitud");
-  const tablaSolicitudes = document.getElementById("tablaSolicitudes");
   const cuerpoTabla = document.getElementById("cuerpoSolicitudes");
   const filtroEstado = document.getElementById("filtroEstado");
   const contadorSolicitudes = document.getElementById("contadorSolicitudes");
+  const poInput = document.getElementById("po");
+  const infoPedido = document.getElementById("infoPedido");
   const EMBARCADO = "En tránsito";
 
-  // Determinar si esta página es de cancelaciones o modificaciones
-  const tipoPagina = formSolicitud ? formSolicitud.dataset.accion : "cancelacion";
+  // Determinar si esta página es de cancelación o modificación de forma robusta
+  const accion = formSolicitud ? (formSolicitud.dataset.accion || "") : "";
+  const tipoAtributo = formSolicitud ? (formSolicitud.dataset.tipo || "") : "";
+  const tipoPagina = (tipoAtributo === "modificacion" || accion === "modificar" || accion === "modificacion") 
+    ? "modificacion" 
+    : "cancelacion";
 
-  // Token CSRF de Laravel si está disponible en la página
+  // Token CSRF de Laravel
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
 
   function avisar(texto, tipo = "success") {
     if (!avisoSolicitud) return;
-    avisoSolicitud.textContent = texto;
-    avisoSolicitud.className = `alert alert-${tipo} mt-3 mb-0 shadow-sm`;
+    const icono = tipo === "success" 
+      ? '<i class="bi bi-check-circle-fill me-2 fs-5"></i>' 
+      : (tipo === "danger" ? '<i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>' : '<i class="bi bi-info-circle-fill me-2 fs-5"></i>');
+    avisoSolicitud.innerHTML = `<div class="d-flex align-items-center">${icono}<div>${texto}</div></div>`;
+    avisoSolicitud.className = `alert alert-${tipo} mb-4 shadow-sm`;
     avisoSolicitud.classList.remove("d-none");
     avisoSolicitud.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   // Pre-llenar correo si hay sesión activa
-  const sesion = Bochito.getSesion();
-  if (sesion && sesion.correo) {
-    const inputEmail = document.getElementById("email") || document.getElementById("mod-email");
-    if (inputEmail && !inputEmail.value) {
-      inputEmail.value = sesion.correo;
-    }
+  const sesion = (typeof Bochito !== "undefined" && Bochito.getSesion) ? Bochito.getSesion() : null;
+  const inputEmail = document.getElementById("email") || document.getElementById("mod-email");
+  if (sesion && sesion.correo && inputEmail && !inputEmail.value) {
+    inputEmail.value = sesion.correo;
+  }
+
+  // Búsqueda en vivo al escribir la orden de compra (PO)
+  if (poInput && infoPedido) {
+    poInput.addEventListener("input", () => {
+      const val = poInput.value.trim().toUpperCase();
+      if (val.length < 4) {
+        infoPedido.className = "mt-2 small d-none";
+        infoPedido.innerHTML = "";
+        return;
+      }
+
+      if (typeof Bochito !== "undefined" && Bochito.getPedidos) {
+        const pedido = Bochito.getPedidos().find(p => p.po === val);
+        if (pedido) {
+          const esEmbarcado = pedido.estatus === EMBARCADO;
+          const alertClass = esEmbarcado ? "danger" : "info";
+          const badgeColor = esEmbarcado ? "danger" : (pedido.estatus === "Cancelado" ? "secondary" : "success");
+
+          infoPedido.className = `alert alert-${alertClass} p-2 mt-2 mb-0 shadow-sm`;
+          infoPedido.innerHTML = `
+            <div><strong><i class="bi bi-box-seam me-1"></i> Pedido encontrado:</strong> ${pedido.cliente} &bull; ${pedido.producto} (${pedido.cantidad} uds.)</div>
+            <div class="mt-1">Estatus actual: <span class="badge text-bg-${badgeColor}">${pedido.estatus}</span></div>
+            ${esEmbarcado ? `<div class="mt-1 text-danger fw-semibold"><i class="bi bi-exclamation-octagon me-1"></i> Este pedido ya se encuentra "${EMBARCADO}" y no permite ${tipoPagina === 'cancelacion' ? 'cancelación' : 'modificación'}.</div>` : ''}
+          `;
+          return;
+        }
+      }
+
+      // Si tiene formato válido pero no está en la lista inicial
+      if (/^[Pp][Oo]-[0-9]{4}-[0-9]{4}$/i.test(val)) {
+        infoPedido.className = "alert alert-secondary p-2 mt-2 mb-0";
+        infoPedido.innerHTML = `<i class="bi bi-info-circle me-1"></i> Orden <strong>${val}</strong>: Lista para registrar la solicitud.`;
+      } else {
+        infoPedido.className = "mt-2 small d-none";
+      }
+    });
   }
 
   /**
    * Renderiza las solicitudes registradas en la tabla
    */
-  function cargarTablaSolicitudes() {
+  async function cargarTablaSolicitudes() {
     if (!cuerpoTabla) return;
-    cuerpoTabla.innerHTML = "";
+
+    let solicitudes = (typeof Bochito !== "undefined" && Bochito.getSolicitudes) 
+      ? Bochito.getSolicitudes(tipoPagina) 
+      : [];
+
+    // Intentar sincronizar con backend Laravel si está activo
+    try {
+      const res = await fetch(`/solicitudes?tipo=${tipoPagina}`, {
+        headers: { "Accept": "application/json" }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.solicitudes) && json.solicitudes.length > 0) {
+          // Si el backend tiene solicitudes, combinarlas con las locales
+          const map = new Map();
+          solicitudes.forEach(s => map.set(s.po + '-' + s.tipo, s));
+          json.solicitudes.forEach(s => map.set(s.po + '-' + s.tipo, s));
+          solicitudes = Array.from(map.values());
+        }
+      }
+    } catch (e) {
+      // Uso de datos locales en localStorage
+    }
 
     const estadoSeleccionado = filtroEstado ? filtroEstado.value : "";
-    let solicitudes = Bochito.getSolicitudes(tipoPagina);
-
     if (estadoSeleccionado) {
       solicitudes = solicitudes.filter(s => s.estado === estadoSeleccionado);
     }
@@ -52,12 +115,16 @@ document.addEventListener("DOMContentLoaded", () => {
       contadorSolicitudes.textContent = solicitudes.length;
     }
 
+    cuerpoTabla.innerHTML = "";
+
+    const etiquetaNombre = tipoPagina === "cancelacion" ? "cancelación" : "modificación";
+
     if (solicitudes.length === 0) {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td colspan="7" class="text-center text-muted py-4">
-          <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-          No hay solicitudes de ${tipoPagina} registradas ${estadoSeleccionado ? `con estatus "${estadoSeleccionado}"` : ""}.
+          <i class="bi bi-inbox fs-3 d-block mb-2 text-teal"></i>
+          No hay solicitudes de ${etiquetaNombre} registradas ${estadoSeleccionado ? `con estatus "${estadoSeleccionado}"` : ""}.
         </td>
       `;
       cuerpoTabla.appendChild(tr);
@@ -66,23 +133,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     solicitudes.forEach((sol) => {
       const tr = document.createElement("tr");
+      const badgeClase = (typeof Bochito !== "undefined" && Bochito.COLOR_ESTADO_SOLICITUD)
+        ? (Bochito.COLOR_ESTADO_SOLICITUD[sol.estado] || "secondary")
+        : (sol.estado === "Aprobada" ? "success" : (sol.estado === "Rechazada" ? "danger" : "warning"));
 
-      // Badge de estado
-      const badgeClase = Bochito.COLOR_ESTADO_SOLICITUD[sol.estado] || "secondary";
+      const fechaStr = (typeof Bochito !== "undefined" && Bochito.formatoFecha)
+        ? Bochito.formatoFecha(sol.fecha || sol.created_at)
+        : (sol.fecha || sol.created_at || "—");
 
       tr.innerHTML = `
         <td class="fw-bold text-secondary">#${sol.id}</td>
         <td><span class="badge text-bg-light border">${sol.po}</span></td>
         <td><small class="text-muted">${sol.email}</small></td>
         <td>
-          <div class="fw-semibold text-truncate" style="max-width: 180px;" title="${sol.motivo || ''}">
+          <div class="fw-semibold text-truncate" style="max-width: 200px;" title="${sol.motivo || ''}">
             ${sol.motivo || 'General'}
           </div>
-          <small class="text-muted text-truncate d-block" style="max-width: 220px;" title="${sol.comentarios}">
+          <small class="text-muted text-truncate d-block" style="max-width: 230px;" title="${sol.comentarios}">
             ${sol.comentarios}
           </small>
         </td>
-        <td><small>${Bochito.formatoFecha(sol.fecha || sol.created_at)}</small></td>
+        <td><small>${fechaStr}</small></td>
         <td><span class="badge text-bg-${badgeClase}">${sol.estado}</span></td>
         <td class="text-end">
           <div class="btn-group btn-group-sm" role="group">
@@ -97,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </button>
               `
                 : `
-                <button type="button" class="btn btn-outline-secondary btn-cambiar-estado" data-id="${sol.id}" title="Cambiar a Pendiente">
+                <button type="button" class="btn btn-outline-secondary btn-cambiar-estado" data-id="${sol.id}" title="Reabrir / Cambiar a Pendiente">
                   <i class="bi bi-arrow-repeat"></i> Reabrir
                 </button>
               `
@@ -118,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
    * Asigna eventos a los botones de acciones de la tabla
    */
   function asignarEventosAcciones() {
-    // Botón Aprobar
     document.querySelectorAll(".btn-aprobar").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.id;
@@ -126,7 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Botón Rechazar
     document.querySelectorAll(".btn-rechazar").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.id;
@@ -137,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Botón Reabrir / Cambiar Estado
     document.querySelectorAll(".btn-cambiar-estado").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.id;
@@ -145,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Botón Eliminar
     document.querySelectorAll(".btn-eliminar").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.id;
@@ -161,12 +228,12 @@ document.addEventListener("DOMContentLoaded", () => {
    * Actualiza el estado de la solicitud en localStorage y backend
    */
   async function actualizarEstadoSolicitud(id, nuevoEstado, respuestaAdmin = null) {
-    // 1. Actualización local
-    Bochito.updateSolicitudEstado(id, nuevoEstado, respuestaAdmin);
+    if (typeof Bochito !== "undefined" && Bochito.updateSolicitudEstado) {
+      Bochito.updateSolicitudEstado(id, nuevoEstado, respuestaAdmin);
+    }
     cargarTablaSolicitudes();
-    avisar(`Solicitud #${id} actualizada a "${nuevoEstado}".`, nuevoEstado === "Aprobada" ? "success" : "warning");
+    avisar(`Solicitud #${id} actualizada a <strong>${nuevoEstado}</strong>.`, nuevoEstado === "Aprobada" ? "success" : "warning");
 
-    // 2. Intentar actualización en backend Laravel
     try {
       await fetch(`/solicitudes/${id}/estado`, {
         method: "PATCH",
@@ -177,21 +244,19 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: JSON.stringify({ estado: nuevoEstado, respuesta_admin: respuestaAdmin })
       });
-    } catch (e) {
-      // Backend offline o modo local: los datos persisten en localStorage
-    }
+    } catch (e) {}
   }
 
   /**
    * Elimina una solicitud en localStorage y backend
    */
   async function eliminarSolicitud(id) {
-    // 1. Eliminación local
-    Bochito.eliminarSolicitud(id);
+    if (typeof Bochito !== "undefined" && Bochito.eliminarSolicitud) {
+      Bochito.eliminarSolicitud(id);
+    }
     cargarTablaSolicitudes();
     avisar(`La solicitud #${id} fue eliminada correctamente.`, "info");
 
-    // 2. Intentar eliminación en backend Laravel
     try {
       await fetch(`/solicitudes/${id}`, {
         method: "DELETE",
@@ -200,9 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
         }
       });
-    } catch (e) {
-      // Persiste localmente
-    }
+    } catch (e) {}
   }
 
   /**
@@ -212,45 +275,47 @@ document.addEventListener("DOMContentLoaded", () => {
     formSolicitud.addEventListener("submit", async (e) => {
       e.preventDefault();
       formSolicitud.classList.add("was-validated");
-      if (avisoSolicitud) avisoSolicitud.className = "d-none";
 
-      if (!formSolicitud.checkValidity()) return;
+      if (!formSolicitud.checkValidity()) {
+        avisar("Por favor completa todos los campos requeridos correctamente.", "danger");
+        return;
+      }
 
-      const accion = formSolicitud.dataset.accion; // "cancelar" o "modificar"
-      const tipo = accion === "cancelar" ? "cancelacion" : "modificacion";
-      const poInput = document.getElementById("po");
-      const po = poInput.value.trim().toUpperCase();
-
-      const emailInput = document.getElementById("email") || document.getElementById("mod-email");
-      const email = emailInput ? emailInput.value.trim() : "";
+      const po = poInput ? poInput.value.trim().toUpperCase() : "";
+      const email = inputEmail ? inputEmail.value.trim() : "";
 
       const reasonSelect = document.getElementById("reason");
-      const motivo = reasonSelect ? reasonSelect.options[reasonSelect.selectedIndex]?.text : "Modificación solicitada";
+      const motivo = reasonSelect ? reasonSelect.options[reasonSelect.selectedIndex]?.value : "Modificación solicitada";
 
       const commentsInput = document.getElementById("comments") || document.getElementById("changes");
       const comentarios = commentsInput ? commentsInput.value.trim() : "";
 
-      // Verificar estatus del pedido en el registro
-      const pedido = Bochito.getPedidos().find((p) => p.po === po);
-      if (pedido && pedido.estatus === EMBARCADO) {
-        return avisar(
-          `El pedido ${po} ya fue embarcado ("${EMBARCADO}"), por lo que no es posible procesar la solicitud de ${tipo}.`,
-          "danger"
-        );
+      // Regla de negocio: Verificar estatus del pedido
+      if (typeof Bochito !== "undefined" && Bochito.getPedidos) {
+        const pedido = Bochito.getPedidos().find((p) => p.po === po);
+        if (pedido && pedido.estatus === EMBARCADO) {
+          return avisar(
+            `El pedido <strong>${po}</strong> ya fue embarcado ("${EMBARCADO}"), por lo que no es posible procesar la solicitud de ${tipoPagina === 'cancelacion' ? 'cancelación' : 'modificación'}.`,
+            "danger"
+          );
+        }
       }
 
-      // 1. Guardar solicitud localmente en Bochito
-      const nuevaSolicitud = Bochito.saveSolicitud({
-        tipo,
-        po,
-        email,
-        motivo,
-        comentarios,
-      });
+      // 1. Guardar solicitud localmente en Bochito (instantáneo)
+      let nuevaSolicitud = null;
+      if (typeof Bochito !== "undefined" && Bochito.saveSolicitud) {
+        nuevaSolicitud = Bochito.saveSolicitud({
+          tipo: tipoPagina,
+          po,
+          email,
+          motivo,
+          comentarios,
+        });
+      }
 
-      // 2. Intentar guardar en backend Laravel
+      // 2. Enviar a backend Laravel si está activo
       try {
-        await fetch("/solicitudes", {
+        const respuesta = await fetch("/solicitudes", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -258,31 +323,42 @@ document.addEventListener("DOMContentLoaded", () => {
             ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
           },
           body: JSON.stringify({
-            tipo,
+            tipo: tipoPagina,
             po,
             email,
             motivo,
             comentarios
           })
         });
+
+        if (!respuesta.ok && respuesta.status === 422) {
+          const errJson = await respuesta.json();
+          const primerError = errJson.message || Object.values(errJson.errors || {})[0]?.[0] || "Error de validación.";
+          return avisar(primerError, "danger");
+        }
       } catch (err) {
-        // En modo estático/offline la solicitud ya está guardada en localStorage
+        // Modo offline / prototipo sin backend activo
       }
 
+      const folio = nuevaSolicitud ? `#${nuevaSolicitud.id}` : "";
       avisar(
-        `¡Solicitud de ${tipo} para la orden ${po} registrada exitosamente con folio #${nuevaSolicitud.id}!`,
+        `¡Solicitud de ${tipoPagina === 'cancelacion' ? 'cancelación' : 'modificación'} para la orden <strong>${po}</strong> registrada exitosamente ${folio}!`,
         "success"
       );
 
       formSolicitud.reset();
       formSolicitud.classList.remove("was-validated");
 
-      // Si el usuario tenía sesión, restaurar el correo
-      if (sesion && sesion.correo && emailInput) {
-        emailInput.value = sesion.correo;
+      // Restaurar correo si hay sesión activa
+      if (sesion && sesion.correo && inputEmail) {
+        inputEmail.value = sesion.correo;
+      }
+      if (infoPedido) {
+        infoPedido.className = "mt-2 small d-none";
+        infoPedido.innerHTML = "";
       }
 
-      // Actualizar la tabla
+      // Actualizar la tabla inmediatamente
       cargarTablaSolicitudes();
     });
   }
@@ -292,6 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
     filtroEstado.addEventListener("change", cargarTablaSolicitudes);
   }
 
-  // Inicializar la tabla al cargar la vista
+  // Carga inicial de la tabla
   cargarTablaSolicitudes();
 });

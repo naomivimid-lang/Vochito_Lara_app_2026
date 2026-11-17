@@ -26,7 +26,7 @@ class StoreSolicitudRequest extends FormRequest
             'po' => 'required|string|regex:/^[Pp][Oo]-[0-9]{4}-[0-9]{4}$/i',
             'email' => 'required|email|max:150',
             'motivo' => 'nullable|string|max:150',
-            'comentarios' => 'required|string|min:5|max:1000',
+            'comentarios' => 'required|string|max:1000',
         ];
     }
 
@@ -43,7 +43,6 @@ class StoreSolicitudRequest extends FormRequest
             'email.required' => 'El correo electrónico es obligatorio.',
             'email.email' => 'El correo electrónico ingresado no es válido.',
             'comentarios.required' => 'Los comentarios o cambios solicitados son obligatorios.',
-            'comentarios.min' => 'Los comentarios deben contener al menos 5 caracteres.',
         ];
     }
 }

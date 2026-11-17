@@ -4,7 +4,9 @@
     - $tipo: 'cancelacion' o 'modificacion'
     - $accion: 'cancelar' o 'modificar'
 --}}
-<form id="formSolicitud" data-accion="{{ $accion }}" method="POST" action="{{ route('solicitudes.store') }}" novalidate>
+<div id="avisoSolicitud" class="d-none" role="status"></div>
+
+<form id="formSolicitud" data-accion="{{ $accion }}" data-tipo="{{ $tipo }}" method="POST" action="{{ route('solicitudes.store') }}" novalidate>
     @csrf
     <input type="hidden" name="tipo" value="{{ $tipo }}" />
 
@@ -42,6 +44,7 @@
             value="{{ old('po') }}"
             required
         />
+        <div id="infoPedido" class="mt-2 small d-none"></div>
         @error('po')
             <div class="invalid-feedback">{{ $message }}</div>
         @else
@@ -95,7 +98,7 @@
         @enderror
     </div>
 
-    <button type="submit" class="btn btn-teal w-100 py-2 fw-bold shadow-sm">
+    <button type="submit" id="btnSubmitSolicitud" class="btn btn-teal w-100 py-2 fw-bold shadow-sm">
         @if($tipo === 'cancelacion')
             <i class="bi bi-x-circle-fill me-1"></i> Confirmar y Registrar Cancelación
         @else
@@ -103,4 +106,3 @@
         @endif
     </button>
 </form>
-<div id="avisoSolicitud" class="d-none" role="status"></div>
