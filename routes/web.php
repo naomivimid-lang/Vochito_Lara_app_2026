@@ -1,7 +1,8 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\ReporteController;
 
 // Página principal
 Route::get('/', function () {
@@ -19,9 +20,19 @@ Route::view('/historial', 'vochito.historial')->name('vochito.historial');
 Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
 Route::view('/incidencias', 'vochito.incidencias')->name('vochito.incidencias');
 Route::view('/evidencias', 'vochito.evidencias')->name('vochito.evidencias');
-Route::view('/cancelacion', 'vochito.cancelacion')->name('vochito.cancelacion');
-Route::view('/modificacion', 'vochito.modificacion')->name('vochito.modificacion');
-Route::view('/reporte-desempeno', 'vochito.reporte_desempeno')->name('vochito.reporte_desempeno');
+
+// Módulos: Cancelaciones, Modificaciones y Solicitudes
+Route::get('/cancelacion', [SolicitudController::class, 'cancelacionView'])->name('vochito.cancelacion');
+Route::get('/modificacion', [SolicitudController::class, 'modificacionView'])->name('vochito.modificacion');
+Route::get('/solicitudes', [SolicitudController::class, 'index'])->name('vochito.solicitudes.index');
+Route::post('/solicitudes', [SolicitudController::class, 'store'])->name('vochito.solicitudes.store');
+Route::patch('/solicitudes/{id}/estado', [SolicitudController::class, 'updateEstado'])->name('vochito.solicitudes.estado');
+Route::delete('/solicitudes/{id}', [SolicitudController::class, 'destroy'])->name('vochito.solicitudes.destroy');
+
+// Módulo: Reporte de Desempeño
+Route::get('/reporte-desempeno', [ReporteController::class, 'index'])->name('vochito.reporte_desempeno');
+Route::post('/reporte-desempeno/generar', [ReporteController::class, 'generar'])->name('vochito.reporte.generar');
+
 Route::view('/contacto', 'vochito.contacto')->name('vochito.contacto');
 Route::view('/ayuda', 'vochito.ayuda')->name('vochito.ayuda');
 Route::view('/privacidad', 'vochito.privacidad')->name('vochito.privacidad');
