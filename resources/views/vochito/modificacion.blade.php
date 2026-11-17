@@ -92,7 +92,7 @@
         </p>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <span class="badge text-bg-teal px-3 py-2 fs-6">
+        <span class="badge bg-teal text-white px-3 py-2 fs-6">
           Total: <span id="contadorSolicitudes">0</span>
         </span>
         <select id="filtroEstado" class="form-select form-select-sm w-auto">
@@ -189,5 +189,5 @@
 @endsection
 
 @push('scripts')
-  <script src="{{ asset('js/solicitudes.js') }}"></script>
+  <script src="{{ asset('js/solicitudes.js') }}?v=2"></script>
 @endpush

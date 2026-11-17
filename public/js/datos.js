@@ -22,7 +22,7 @@ const Bochito = (() => {
 
   const CLAVE_PEDIDOS = "bochito_pedidos";
   const CLAVE_SESION = "bochito_sesion";
-  const CLAVE_SOLICITUDES = "bochito_solicitudes";
+  const CLAVE_SOLICITUDES = "bochito_solicitudes_v2";
 
   const PEDIDOS_INICIALES = [
     { id: 1, po: "PO-2026-0001", cliente: "Frutería Don Chuy", producto: "Huacales de madera", cantidad: 120, entrega: "2026-10-15T10:00", entregaReal: "2026-10-15T09:30", estatus: "Orden recibida", desempeno: "a_tiempo", incidencias: [] },

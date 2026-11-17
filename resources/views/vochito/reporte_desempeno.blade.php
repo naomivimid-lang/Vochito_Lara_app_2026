@@ -275,5 +275,5 @@
 @endsection
 
 @push('scripts')
-  <script src="{{ asset('js/reportes.js') }}"></script>
+  <script src="{{ asset('js/reportes.js') }}?v=2"></script>
 @endpush

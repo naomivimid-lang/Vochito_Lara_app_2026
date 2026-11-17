@@ -80,31 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * Renderiza las solicitudes registradas en la tabla
    */
-  async function cargarTablaSolicitudes() {
+  function cargarTablaSolicitudes() {
     if (!cuerpoTabla) return;
 
     let solicitudes = (typeof Bochito !== "undefined" && Bochito.getSolicitudes) 
       ? Bochito.getSolicitudes(tipoPagina) 
       : [];
-
-    // Intentar sincronizar con backend Laravel si está activo
-    try {
-      const res = await fetch(`/solicitudes?tipo=${tipoPagina}`, {
-        headers: { "Accept": "application/json" }
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && Array.isArray(json.solicitudes) && json.solicitudes.length > 0) {
-          // Si el backend tiene solicitudes, combinarlas con las locales
-          const map = new Map();
-          solicitudes.forEach(s => map.set(s.po + '-' + s.tipo, s));
-          json.solicitudes.forEach(s => map.set(s.po + '-' + s.tipo, s));
-          solicitudes = Array.from(map.values());
-        }
-      }
-    } catch (e) {
-      // Uso de datos locales en localStorage
-    }
 
     const estadoSeleccionado = filtroEstado ? filtroEstado.value : "";
     if (estadoSeleccionado) {
@@ -313,33 +294,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
 
-      // 2. Enviar a backend Laravel si está activo
-      try {
-        const respuesta = await fetch("/solicitudes", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
-          },
-          body: JSON.stringify({
-            tipo: tipoPagina,
-            po,
-            email,
-            motivo,
-            comentarios
-          })
-        });
-
-        if (!respuesta.ok && respuesta.status === 422) {
-          const errJson = await respuesta.json();
-          const primerError = errJson.message || Object.values(errJson.errors || {})[0]?.[0] || "Error de validación.";
-          return avisar(primerError, "danger");
-        }
-      } catch (err) {
-        // Modo offline / prototipo sin backend activo
-      }
-
       const folio = nuevaSolicitud ? `#${nuevaSolicitud.id}` : "";
       avisar(
         `¡Solicitud de ${tipoPagina === 'cancelacion' ? 'cancelación' : 'modificación'} para la orden <strong>${po}</strong> registrada exitosamente ${folio}!`,
@@ -360,6 +314,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Actualizar la tabla inmediatamente
       cargarTablaSolicitudes();
+
+      // 2. Enviar a backend Laravel en segundo plano
+      fetch("/solicitudes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
+        },
+        body: JSON.stringify({
+          tipo: tipoPagina,
+          po,
+          email,
+          motivo,
+          comentarios
+        })
+      }).catch(() => {});
     });
   }
 
