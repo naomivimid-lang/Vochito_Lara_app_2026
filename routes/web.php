@@ -1,7 +1,12 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\ProductoController;
+
+Route::resource('productos', ProductoController::class)->except('show');
+Route::resource('pedidos', PedidoController::class)->except('show');
+Route::patch('pedidos/{pedido}/estatus', [PedidoController::class, 'actualizarEstatus'])->name('pedidos.estatus');
 
 // Página principal
 Route::get('/', function () {
@@ -13,8 +18,6 @@ Route::view('/nosotros', 'vochito.nosotros')->name('vochito.nosotros');
 Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
 Route::view('/catalogo', 'vochito.catalogo')->name('vochito.catalogo');
 Route::view('/busquedas', 'vochito.busquedas')->name('vochito.busquedas');
-Route::view('/pedidos', 'vochito.pedidos')->name('vochito.pedidos');
-Route::view('/productos', 'vochito.productos')->name('vochito.productos');
 Route::view('/historial', 'vochito.historial')->name('vochito.historial');
 Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
 Route::view('/incidencias', 'vochito.incidencias')->name('vochito.incidencias');
