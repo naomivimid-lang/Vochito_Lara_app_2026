@@ -1,66 +1,68 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bochito – Envíos y Ventas
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Es una app web hecha con **Laravel 12** y **PostgreSQL** para llevar los **productos** de las tiendas locales y los **pedidos** de los clientes. Tiene altas, ediciones, bajas, búsqueda, filtros, paginación, mensajes en español y modo oscuro.
 
-## About Laravel
+![Lista de productos](docs/capturas/productos.jpg)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ¿Qué hace?
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Productos** (`/productos`): puedes crear, editar, eliminar y buscar por nombre. No se repiten nombres, y si un producto ya tiene pedidos no te deja borrarlo (te avisa con un mensaje).
+- **Pedidos** (`/pedidos`): puedes crear, editar y cancelar. Filtras por cliente, estatus o fechas, y cambias el estatus directo desde la tabla.
+- **Catálogo** (`/catalogo`): muestra en tarjetas los productos que están activos.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Cómo correrlo
 
-## Learning Laravel
+Necesitas PHP 8.2 o más nuevo, Composer y PostgreSQL.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+git clone https://github.com/naomivimid-lang/Vochito_Lara_app_2026.git
+cd Vochito_Lara_app_2026
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Crea la base `laravel` en PostgreSQL y pon tu usuario y contraseña en el `.env`. Después:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+php artisan migrate --seed
+php artisan serve
+```
 
-## Laravel Sponsors
+Abre `http://127.0.0.1:8000`. El `--seed` mete 10 productos del catálogo y un pedido para cada uno.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+> Para empezar de cero usa `php artisan migrate:fresh --seed`. Ojo: borra todo lo que haya en la base.
 
-### Premium Partners
+## Base de datos
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Son dos tablas relacionadas: un producto puede tener muchos pedidos.
 
-## Contributing
+- **productos**: nombre (único), descripción, precio, stock y si está activo.
+- **pedidos**: cliente, producto (llave foránea), cantidad, fecha de entrega y estatus.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+![Migración de pedidos y tabla productos en PostgreSQL](docs/capturas/migracion-y-tablas.jpg)
 
-## Code of Conduct
+## Cómo está organizado (MVC)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- **Modelos** (`app/Models`): `Producto` y `Pedido`, con su relación.
+- **Controladores** (`app/Http/Controllers`): `ProductoController` y `PedidoController`.
+- **Validaciones** (`app/Http/Requests`): una por formulario, con mensajes en español.
+- **Vistas** (`resources/views`): un layout común y las carpetas `productos/` y `pedidos/`.
+- **Rutas** (`routes/web.php`): `Route::resource` para los dos CRUD y una ruta extra para cambiar el estatus. Las ves todas con `php artisan route:list`.
 
-## Security Vulnerabilities
+![ProductoController](docs/capturas/controlador.jpg)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Seguridad
 
-## License
+- Todos los formularios llevan `@csrf`.
+- Se valida en el servidor, no solo en el navegador.
+- Las consultas usan Eloquent, sin armar SQL a mano.
+- Las contraseñas solo van en el `.env`, que no se sube a GitHub.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Equipo
+
+| Integrante | Qué hizo |
+|---|---|
+| Miguel (MAngelGL777) | Migraciones, modelos, validaciones y CRUD de productos y pedidos |
+| _(nombre)_ | _(qué hizo)_ |
+| _(nombre)_ | _(qué hizo)_ |
