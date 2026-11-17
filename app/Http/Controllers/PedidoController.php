@@ -41,7 +41,7 @@ class PedidoController extends Controller
 
     public function edit(Pedido $pedido)
     {
-        $productos = $this->productosActivos();
+        $productos = $this->productosActivos($pedido->producto_id);
 
         return view('pedidos.edit', compact('pedido', 'productos'));
     }
@@ -67,8 +67,12 @@ class PedidoController extends Controller
         return back()->with('ok', "Estatus actualizado a «{$pedido->estatus}».");
     }
 
-    private function productosActivos()
+    // Al editar se incluye el producto actual del pedido aunque ya esté inactivo
+    private function productosActivos(?int $incluirId = null)
     {
-        return Producto::where('activo', true)->orderBy('nombre')->get();
+        return Producto::where('activo', true)
+            ->when($incluirId, fn ($q, $id) => $q->orWhere('id', $id))
+            ->orderBy('nombre')
+            ->get();
     }
 }

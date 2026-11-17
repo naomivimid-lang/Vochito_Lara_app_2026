@@ -40,6 +40,13 @@
   border-color: #8fd3d3;
 }
 
+/* estilos.css pinta los botones de contorno con el azul oscuro del tema claro */
+[data-bs-theme="dark"] .btn-outline-primary,
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: #8fd3d3;
+  border-color: #8fd3d3;
+}
+
 [data-bs-theme="dark"] .lista-solicitudes li {
   background-color: var(--blanco);
 }

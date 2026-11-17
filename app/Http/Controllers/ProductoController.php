@@ -23,6 +23,13 @@ class ProductoController extends Controller
         return view('productos.index', compact('productos'));
     }
 
+    public function catalogo()
+    {
+        $productos = Producto::where('activo', true)->orderBy('nombre')->paginate(12);
+
+        return view('vochito.catalogo', compact('productos'));
+    }
+
     public function create()
     {
         return view('productos.create');

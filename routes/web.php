@@ -16,7 +16,7 @@ Route::get('/', function () {
 // Páginas de Vochito
 Route::view('/nosotros', 'vochito.nosotros')->name('vochito.nosotros');
 Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
-Route::view('/catalogo', 'vochito.catalogo')->name('vochito.catalogo');
+Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('vochito.catalogo');
 Route::view('/busquedas', 'vochito.busquedas')->name('vochito.busquedas');
 Route::view('/historial', 'vochito.historial')->name('vochito.historial');
 Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
