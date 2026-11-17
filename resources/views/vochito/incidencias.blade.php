@@ -1,116 +1,97 @@
-﻿<!doctype html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registro de incidencias - Bochito Envíos y Ventas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="css/estilos.css" />
-    <link rel="stylesheet" href="css/utilidades.css">
-    <link rel="stylesheet" href="css/tema.css">
-    <script src="js/tema.js"></script>
-</head>
-<body class="d-flex flex-column min-vh-100">
+﻿@extends('layouts.app')
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
-      <div class="container">
-        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{{ route('vochito.inicio') }}">
-          <img src="img/logo.png" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top" />
-          <div class="d-flex flex-column lh-sm">
-            <span><i class="fa-solid fa-leaf"></i> Bochito</span>
-            <small>Comercio local</small>
+@section('title', 'Registro de incidencias - Bochito Envíos y Ventas')
+
+@section('header')
+  <header class="bg-primary text-white text-center py-5">
+    <div class="container py-3">
+      <h1 class="display-4 fw-bold">Registro de Incidencias</h1>
+      <p class="lead">Registra un retraso, una falla de maquinaria o falta de materia prima, con su causa y la nueva fecha estimada.</p>
+    </div>
+  </header>
+@endsection
+
+@section('content')
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm border-0 p-4">
+        <form class="needs-validation" method="POST" action="{{ route('incidencias.store') }}" novalidate>
+          @csrf
+          <div class="mb-3">
+            <label for="idPedido" class="form-label fw-bold">Orden de compra (PO) <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              class="form-control text-uppercase @error('idPedido') is-invalid @enderror"
+              id="idPedido"
+              name="idPedido"
+              placeholder="Ej. PO-2026-0001"
+              pattern="[Pp][Oo]-[0-9]{4}-[0-9]{4}"
+              value="{{ old('idPedido') }}"
+              required
+            >
+            @error('idPedido')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @else
+              <div class="invalid-feedback">Escribe la orden de compra con el formato PO-2026-0001.</div>
+            @enderror
           </div>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar menú">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto align-items-lg-center">
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.nosotros') }}"><i class="fa-solid fa-users"></i> Nosotros</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.servicios') }}"><i class="fa-solid fa-store"></i> Servicios</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.catalogo') }}"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{{ route('vochito.pedidos') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.productos') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.historial') }}"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.notificaciones') }}"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item active" aria-current="page" href="{{ route('vochito.incidencias') }}"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.evidencias') }}"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.cancelacion') }}"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.modificacion') }}"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
-              </ul>
-            </li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
-            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
-          </ul>
-        </div>
+
+          <div class="mb-3">
+            <label for="tipoIncidencia" class="form-label fw-bold">Tipo de incidencia <span class="text-danger">*</span></label>
+            <select class="form-select @error('tipoIncidencia') is-invalid @enderror" id="tipoIncidencia" name="tipoIncidencia" required>
+              <option value="">Selecciona una opción</option>
+              <option value="Retraso" {{ old('tipoIncidencia') == 'Retraso' ? 'selected' : '' }}>Retraso</option>
+              <option value="Falla de maquinaria" {{ old('tipoIncidencia') == 'Falla de maquinaria' ? 'selected' : '' }}>Falla de maquinaria</option>
+              <option value="Falta de materia prima" {{ old('tipoIncidencia') == 'Falta de materia prima' ? 'selected' : '' }}>Falta de materia prima</option>
+              <option value="Problemas de logística" {{ old('tipoIncidencia') == 'Problemas de logística' ? 'selected' : '' }}>Problemas de logística</option>
+            </select>
+            @error('tipoIncidencia')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @else
+              <div class="invalid-feedback">Selecciona el tipo de incidencia.</div>
+            @enderror
+          </div>
+
+          <div class="mb-3">
+            <label for="causa" class="form-label fw-bold">Causa <span class="text-danger">*</span></label>
+            <textarea
+              class="form-control @error('causa') is-invalid @enderror"
+              id="causa"
+              name="causa"
+              rows="4"
+              minlength="5"
+              placeholder="Describe la causa de la incidencia..."
+              required
+            >{{ old('causa') }}</textarea>
+            @error('causa')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @else
+              <div class="invalid-feedback">Describe la causa (mínimo 5 caracteres).</div>
+            @enderror
+          </div>
+
+          <div class="mb-3">
+            <label for="nuevaFecha" class="form-label fw-bold">Nueva fecha estimada de entrega <span class="text-danger">*</span></label>
+            <input
+              type="datetime-local"
+              class="form-control @error('nuevaFecha') is-invalid @enderror"
+              id="nuevaFecha"
+              name="nuevaFecha"
+              value="{{ old('nuevaFecha') }}"
+              required
+            >
+            @error('nuevaFecha')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @else
+              <div class="invalid-feedback">Elige la nueva fecha estimada.</div>
+            @enderror
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Registrar incidencia</button>
+          </div>
+        </form>
       </div>
-    </nav>
-
-    <header class="bg-primary text-white text-center py-5">
-        <div class="container py-3">
-            <h1 class="display-4 fw-bold">Registro de Incidencias</h1>
-            <p class="lead">Registra un retraso, una falla de maquinaria o falta de materia prima, con su causa y la nueva fecha estimada.</p>
-        </div>
-    </header>
-
-    <main class="container my-5 flex-grow-1">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow-sm border-0 p-4">
-                    <form class="needs-validation" novalidate data-exito="Incidencia registrada. Se notificará al cliente la nueva fecha estimada.">
-                        <div class="mb-3">
-                            <label for="idPedido" class="form-label fw-bold">Orden de compra (PO) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="idPedido" placeholder="Ej. PO-2026-0001" pattern="[Pp][Oo]-[0-9]{4}-[0-9]{4}" required>
-                            <div class="invalid-feedback">Escribe la orden de compra con el formato PO-2026-0001.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="tipoIncidencia" class="form-label fw-bold">Tipo de incidencia <span class="text-danger">*</span></label>
-                            <select class="form-select" id="tipoIncidencia" required>
-                                <option value="">Selecciona una opción</option>
-                                <option>Retraso</option>
-                                <option>Falla de maquinaria</option>
-                                <option>Falta de materia prima</option>
-                            </select>
-                            <div class="invalid-feedback">Selecciona el tipo de incidencia.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="causa" class="form-label fw-bold">Causa <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="causa" rows="4" minlength="5" placeholder="Describe la causa de la incidencia..." required></textarea>
-                            <div class="invalid-feedback">Describe la causa (mínimo 5 caracteres).</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="nuevaFecha" class="form-label fw-bold">Nueva fecha estimada de entrega <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control" id="nuevaFecha" required>
-                            <div class="invalid-feedback">Elige la nueva fecha estimada.</div>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary px-4">Registrar incidencia</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <footer class="bg-custom-dark text-white text-center py-3 mt-auto">
-      <div class="container">
-        <p class="small mb-2">
-          <a class="link-light" href="{{ route('vochito.ayuda') }}">Ayuda</a> ·
-          <a class="link-light" href="{{ route('vochito.privacidad') }}">Privacidad</a> ·
-          <a class="link-light" href="{{ route('vochito.rnf') }}">Requerimientos no funcionales</a>
-        </p>
-        <p class="mb-0 small">&copy; 2026 Bochito - Envíos y Ventas. Todos los derechos reservados.</p>
-      </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/formularios.js"></script>
-</body>
-</html>
+    </div>
+  </div>
+@endsection

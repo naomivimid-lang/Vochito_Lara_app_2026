@@ -48,4 +48,28 @@ class Pedido extends Model
     {
         return $this->hasMany(Solicitud::class, 'po', 'po');
     }
+
+    /**
+     * Relación con las incidencias reportadas para esta orden.
+     */
+    public function incidencias()
+    {
+        return $this->hasMany(Incidencia::class, 'po', 'po');
+    }
+
+    /**
+     * Relación con las evidencias de entrega registradas.
+     */
+    public function evidencias()
+    {
+        return $this->hasMany(Evidencia::class, 'po', 'po');
+    }
+
+    /**
+     * Relación con la última evidencia de entrega.
+     */
+    public function evidencia()
+    {
+        return $this->hasOne(Evidencia::class, 'po', 'po')->latestOfMany();
+    }
 }

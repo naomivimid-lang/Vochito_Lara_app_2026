@@ -1,184 +1,160 @@
-# Vochito Laravel
+# Vochito Laravel (2026)
 
-## Descripción del proyecto
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)](https://php.net)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap)](https://getbootstrap.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-**Vochito Laravel** es un proyecto web desarrollado con el framework Laravel y PHP, que consiste en la adaptación del sistema Vochito a una estructura basada en el patrón de vistas Blade.
+## 📋 Descripción del Proyecto
 
-El proyecto tiene como finalidad trasladar la interfaz del sistema original Vochito a Laravel, conservar su diseño y organizar sus recursos para facilitar su mantenimiento y futuras modificaciones.
+**Vochito Laravel** es una aplicación web integral desarrollada sobre el framework **Laravel 12** y **PHP**, concebida para la gestión operativa, logística y comercial de pedidos, entregas, incidencias, solicitudes de cancelación/modificación y reportes de desempeño de la plataforma **Bochito - Comercio Local**.
 
-Además, forma parte de una práctica académica enfocada en el uso de las peticiones HTTP y las operaciones CRUD (Crear, Leer, Actualizar y Eliminar).
+El sistema implementa una arquitectura **MVC limpia**, rutas **RESTful estructuradas**, validaciones de negocio en **Form Requests**, base de datos relacional con **migraciones y seeders**, y un diseño visual modular soportado en **layouts y partials reutilizables de Blade**.
 
-## Objetivo
+---
 
-Desarrollar una aplicación web utilizando Laravel que permita comprender y aplicar el funcionamiento de las rutas, vistas Blade, controladores y métodos HTTP mediante un proyecto basado en el sistema Vochito.
+## 🚀 Tecnologías y Herramientas
 
-## Tecnologías utilizadas
+- **Backend:** Laravel 12.x, PHP 8.2+.
+- **Frontend & Plantillas:** Blade Templating Engine, Bootstrap 5.3, Bootstrap Icons, Font Awesome 6.5.
+- **Base de Datos:** SQLite (configuración predeterminada) / MySQL compatible mediante Eloquent ORM.
+- **Validaciones:** Form Requests dedicados (`StorePedidoRequest`, `StoreSolicitudRequest`, etc.).
+- **Control de Versiones:** Git & GitHub.
 
-- **PHP:** lenguaje de programación del lado del servidor.
-- **Laravel 12:** framework para el desarrollo de la aplicación.
-- **Blade:** motor de plantillas de Laravel para organizar las vistas.
-- **HTML5:** estructura de las páginas web.
-- **CSS3:** estilos y diseño visual.
-- **JavaScript:** interactividad y funcionalidades del prototipo.
-- **Bootstrap 5:** diseño adaptable y componentes de interfaz.
-- **Git y GitHub:** control de versiones y trabajo colaborativo.
-- **Visual Studio Code:** entorno de desarrollo.
+---
 
-## Estructura del proyecto
+## 🏗️ Arquitectura del Sistema
 
-```text
-Vochito_Lara_app_2026/
-│
-├── app/
-│   └── Http/
-│       └── Controllers/
-│
-├── public/
-│   ├── css/
-│   ├── js/
-│   └── img/
-│
-├── resources/
-│   └── views/
-│       └── vochito/
-│           ├── inicio.blade.php
-│           ├── nosotros.blade.php
-│           ├── servicios.blade.php
-│           ├── catalogo.blade.php
-│           ├── busquedas.blade.php
-│           ├── pedidos.blade.php
-│           ├── productos.blade.php
-│           └── ...
-│
-├── routes/
-│   └── web.php
-│
-├── database/
-├── composer.json
-├── package.json
-└── README.md
-```
+### 1. Modelos y Relaciones Eloquent
+- **`Pedido`**: Entidad central que administra el flujo de la orden de compra (`PO-YYYY-####`), cliente, producto, cantidad, fechas estimadas/reales y estatus.
+  - `hasMany(Solicitud::class)`: Relación uno a muchos con solicitudes de cancelación y modificación.
+  - `hasMany(Incidencia::class)`: Historial de incidencias y retrasos.
+  - `hasMany(Evidencia::class)` / `hasOne(Evidencia::class)`: Evidencia fotográfica y confirmación de entrega.
+- **`Solicitud`**: Control de solicitudes de cancelación y modificación con estados (*Pendiente*, *Aprobada*, *Rechazada*).
+  - `belongsTo(Pedido::class)`: Enlace con el pedido evaluado.
+- **`Incidencia`**: Registro de retrasos, fallas mecánicas o falta de insumos con ajuste de fecha estimada.
+  - `belongsTo(Pedido::class)`.
+- **`Evidencia`**: Registro de entrega con nombre del receptor, fecha y foto.
+  - `belongsTo(Pedido::class)`.
+- **`Contacto`**: Bandeja de mensajes ciudadanos y solicitudes de colaboración.
 
-## Funcionalidades y secciones
+### 2. Validaciones de Formularios (Form Requests)
+Toda entrada de datos es sanitizada y validada mediante clases dedicadas en `app/Http/Requests`:
+- `StorePedidoRequest`: Valida cliente (mínimo 3 caracteres), cantidad positiva, fecha futura de entrega y formato de PO.
+- `StoreSolicitudRequest`: Valida formato `PO-YYYY-####`, motivos, correo electrónico válido y comentarios descriptivos.
+- `StoreIncidenciaRequest`: Valida tipo de incidencia, justificación y nueva fecha.
+- `StoreEvidenciaRequest`: Valida receptor, fecha y formato de imagen.
+- `StoreContactoRequest`: Valida estructura completa del mensaje de contacto.
 
-El sistema conserva diferentes apartados del proyecto original Vochito:
+### 3. Vistas Modulares (Layouts & Partials Reutilizables)
+- **Layout Base:** `resources/views/layouts/app.blade.php` estandariza el encabezado, navegación, contenedor principal, sistema de alertas y pie de página.
+- **Partials:**
+  - `layouts/partials/navbar.blade.php`: Menú de navegación responsive con control de rutas activas.
+  - `layouts/partials/footer.blade.php`: Pie de página global con enlaces institucionales.
+  - `layouts/partials/alerts.blade.php`: Componente de notificaciones flash (`success`, `error`, validaciones).
+  - `partials/form_solicitud.blade.php`: Formulario reutilizable parametrizable para cancelación o modificación.
 
-- **Inicio:** página principal del sistema.
-- **Nosotros:** información general del proyecto.
-- **Servicios:** presentación de los servicios disponibles.
-- **Catálogo:** sección de consulta de productos.
-- **Búsquedas:** apartado para localizar información.
-- **Pedidos:** consulta y administración de pedidos del prototipo.
-- **Productos:** sección destinada a la gestión de productos.
-- **Historial:** consulta de registros anteriores.
-- **Notificaciones:** avisos del sistema.
-- **Incidencias:** registro y consulta de problemas.
-- **Evidencias:** apartado para consultar evidencias.
-- **Cancelación y modificación:** secciones relacionadas con las solicitudes de los pedidos.
-- **Contacto y ayuda:** información de asistencia al usuario.
-- **Requerimientos:** documentación de los requerimientos no funcionales.
+---
 
-## Peticiones HTTP y operaciones CRUD
+## 🌐 Tabla de Rutas RESTful (`Route::resource`)
 
-Uno de los propósitos principales de este proyecto es aplicar las operaciones CRUD mediante las peticiones HTTP:
+Las operaciones del sistema están organizadas bajo convenciones RESTful estándar en `routes/web.php`:
 
-| Método HTTP | Operación  | Descripción                     |
-| ----------- | ---------- | ------------------------------- |
-| GET         | Leer       | Consultar información.          |
-| POST        | Crear      | Registrar nuevos elementos.     |
-| PUT         | Actualizar | Modificar registros existentes. |
-| DELETE      | Cancelar   | Cancelar pedidos.               |
+| Recurso | Método HTTP | URI | Controlador & Acción | Descripción |
+| :--- | :--- | :--- | :--- | :--- |
+| **Pedidos** | `GET` | `/pedidos` | `PedidoController@index` | Listado y administración de pedidos |
+| | `POST` | `/pedidos` | `PedidoController@store` | Registro de nuevo pedido |
+| | `GET` | `/pedidos/{id}` | `PedidoController@show` | Consulta detallada de una orden |
+| | `PUT/PATCH` | `/pedidos/{id}` | `PedidoController@update` | Actualización de estatus o datos |
+| | `DELETE` | `/pedidos/{id}` | `PedidoController@destroy` | Eliminación de un pedido |
+| **Solicitudes** | `GET` | `/solicitudes` | `SolicitudController@index` | Listado general de solicitudes |
+| | `POST` | `/solicitudes` | `SolicitudController@store` | Registro de cancelación o modificación |
+| | `PATCH` | `/solicitudes/{id}/estado` | `SolicitudController@updateEstado` | Aprobar o rechazar solicitud |
+| | `DELETE` | `/solicitudes/{id}` | `SolicitudController@destroy` | Eliminar solicitud |
+| **Incidencias**| `GET` | `/incidencias` | `IncidenciaController@index` | Consulta de incidencias |
+| | `GET` | `/incidencias/create` | `IncidenciaController@create` | Formulario de registro de incidencia |
+| | `POST` | `/incidencias` | `IncidenciaController@store` | Guardar incidencia |
+| **Evidencias** | `GET` | `/evidencias` | `EvidenciaController@index` | Listado de evidencias |
+| | `GET` | `/evidencias/create` | `EvidenciaController@create` | Formulario de captura de entrega |
+| | `POST` | `/evidencias` | `EvidenciaController@store` | Guardar comprobante y fotografía |
+| **Reportes** | `GET` | `/reporte-desempeno` | `ReporteController@index` | Métricas operativas (KPIs) |
+| | `POST` | `/reporte-desempeno/generar` | `ReporteController@generar` | Cálculo por rango de fechas |
+| **Contacto** | `GET` | `/contacto` | `ContactoController@create` | Formulario de contacto |
+| | `POST` | `/contacto` | `ContactoController@store` | Enviar mensaje |
 
-La práctica busca demostrar estas operaciones utilizando las herramientas de Laravel, sus rutas y vistas Blade, sin depender de una base de datos en esta etapa del proyecto.
+---
 
-## Instalación y ejecución
+## ⚙️ Guía de Instalación, Configuración y Ejecución
 
-Para ejecutar el proyecto de manera local, sigue estos pasos:
+Sigue estos pasos para clonar, configurar y ejecutar el proyecto en tu entorno local:
 
-**1. Clonar el repositorio**
-
+### 1. Clonar el repositorio y seleccionar la rama
 ```bash
-git clone https://github.com/naomivimid-lang/Vochito_Lara_app_2026.git
-```
-
-**2. Entrar a la carpeta**
-
-```bash
+git clone -b Cancelaciones,modificaciones-y-reportes https://github.com/naomivimid-lang/Vochito_Lara_app_2026.git
 cd Vochito_Lara_app_2026
 ```
 
-**3. Instalar las dependencias de PHP**
-
+### 2. Instalar dependencias de PHP con Composer
 ```bash
 composer install
 ```
 
-**4. Crear el archivo de configuración**
-
+### 3. Configurar el archivo de entorno (`.env`)
 En Windows PowerShell:
-
 ```powershell
 Copy-Item .env.example .env
 ```
+En Bash / macOS / Linux:
+```bash
+cp .env.example .env
+```
 
-**5. Generar la clave de Laravel**
-
+### 4. Generar la clave de la aplicación
 ```bash
 php artisan key:generate
 ```
 
-**6. Iniciar el servidor**
+### 5. Configurar la base de datos y ejecutar migraciones con Seeders
+La base de datos predeterminada es SQLite. Asegúrate de que exista el archivo de base de datos (o se creará automáticamente):
 
+En Windows PowerShell:
+```powershell
+New-Item -ItemType File -Path database/database.sqlite -Force
+```
+
+Ejecuta las migraciones y puebla los datos iniciales de prueba:
+```bash
+php artisan migrate --seed
+```
+
+> **Datos precargados por el seeder:**
+> - Órdenes de prueba con estatus: *Entregado a tiempo*, *Retrasado*, *Control de calidad*, *Cancelado* y *En tránsito*.
+> - Solicitudes de cancelación y modificación en distintos estados.
+> - Incidencias de logística y evidencias de entrega.
+> - Usuario demo: `test@example.com` / `password123`.
+
+### 6. Iniciar el servidor local
 ```bash
 php artisan serve
 ```
 
-**7. Abrir el proyecto**
+### 7. Abrir la aplicación en el navegador
+Ingresa a:
+```
+http://localhost:8000
+```
+o al puerto indicado en la consola.
 
-En el navegador ingresa al enlace que te muestre el resultado del php
+---
 
-## 🌐 Rutas principales
+## 👥 Equipo de Desarrollo
 
-Las siguientes son algunas de las rutas configuradas en Laravel:
+- **Vital Millán Dayra Naomi**
+- **Guerrero López Miguel Ángel**
+- **Carpio Campos Rodrigo**
+- **Ortiz Salguero Geazul Guadalupe**
+- **Lorenzana Hernández Aarón Dahir**
 
-| Ruta              | Vista            |
-| ----------------- | ---------------- |
-| `/`               | Inicio           |
-| `/nosotros`       | Nosotros         |
-| `/servicios`      | Servicios        |
-| `/catalogo`       | Catálogo         |
-| `/busquedas`      | Búsquedas        |
-| `/pedidos`        | Pedidos          |
-| `/productos`      | Productos        |
-| `/historial`      | Historial        |
-| `/notificaciones` | Notificaciones   |
-| `/incidencias`    | Incidencias      |
-| `/contacto`       | Contacto         |
-| `/iniciar-sesion` | Inicio de sesión |
+---
 
-## Trabajo colaborativo
-
-El desarrollo de este proyecto se realiza mediante Git y GitHub, permitiendo que los integrantes del equipo puedan colaborar, realizar modificaciones, actualizar archivos y compartir avances.
-
-Cada colaborador puede aportar mejoras al diseño, las funcionalidades y la organización del proyecto mediante commits y actualizaciones del repositorio.
-
-## Alcance del proyecto
-
-Esta versión está enfocada en la adaptación del sistema Vochito a Laravel y en el aprendizaje de sus herramientas principales.
-
-La práctica contempla el uso de vistas Blade, rutas web, controladores y operaciones CRUD, utilizando datos de prueba y sin implementar una conexión a una base de datos.
-
-## 👩‍💻 Equipo
-
-- Vital Millán Dayra Naomi
-- Guerrero López Miguel Ángel
-- Carpio Campos Rodrigo
-- Ortiz Salguero Geazul Guadalupe
-- Lorenzana Hernández Aarón Dahir
-
-## Evidencia
-
-## ![Imagen del proyecto](public/img/fff1.png)
-
-![Imagen del Proyecto](<Captura de pantalla 2026-11-04 145333.png>)
-**Vochito Laravel – Proyecto académico 2026.**
+**Vochito Laravel 2026** – *Plataforma de comercio local y logística colaborativa.*
