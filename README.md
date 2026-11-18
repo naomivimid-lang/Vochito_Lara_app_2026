@@ -193,3 +193,31 @@ Abrir en el navegador:
 ```
 
 ```
+## MI PARTE
+
+**Nombre:** Rodrigo Carpio Campos.
+
+### Actividades desarrolladas
+
+Durante el desarrollo del proyecto VOCHITO – Envíos y Ventas, participé en la implementación y configuración de las siguientes funcionalidades:
+
+- **Módulo de autenticación:** implementación del inicio y cierre de sesión de usuarios.
+- **Registro de usuarios:** creación de la funcionalidad para registrar nuevas cuentas.
+- **CRUD de usuarios:** implementación de las operaciones para consultar, editar y eliminar usuarios.
+- **Control de acceso:** configuración de permisos para restringir el acceso al administrador.
+- **Controladores:** desarrollo y modificación de `AuthController` y `UserController`.
+- **Rutas:** configuración de rutas para el registro, inicio de sesión y administración de usuarios.
+- **Vistas Blade:** trabajo en las interfaces de inicio de sesión, registro y administración de usuarios.
+- **Validaciones:** implementación de validaciones para nombres, correos electrónicos y contraseñas.
+
+### Objetivo de mi participación
+
+Contribuir al desarrollo de la aplicación mediante la implementación de funcionalidades de autenticación y administración de usuarios, aplicando el patrón MVC de Laravel, las operaciones CRUD y el uso de Git para el control de versiones.
+
+## Capturas de pantalla de MIAS
+
+### Página principal
+
+![Página principal](public/img/HG1.png)
+
+![Página principal](public/img/HHG2.png)
