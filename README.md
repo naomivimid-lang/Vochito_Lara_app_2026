@@ -182,3 +182,50 @@ La práctica contempla el uso de vistas Blade, rutas web, controladores y operac
 
 ![Imagen del Proyecto](<Captura de pantalla 2026-11-04 145333.png>)
 **Vochito Laravel – Proyecto académico 2026.**
+
+
+---
+
+## Aportaciones de Lorenzana Hernández Aarón Dahir
+
+### Issue #7 (Aarón): Cancelaciones, modificaciones y reportes
+
+**Interfaces trabajadas:**
+
+- `cancelacion.blade.php`
+- `modificacion.blade.php`
+- `reporte_desempeno.blade.php`
+
+**Actividades realizadas:**
+
+- Registro de solicitudes de cancelación y de modificación de pedidos.
+- Consulta de las solicitudes realizadas en una tabla con filtro por estado (Pendiente, Aprobada, Rechazada).
+- Actualización del estado de las solicitudes (aprobar, rechazar o reabrir).
+- Eliminación de solicitudes cuando corresponde.
+- Regla de negocio: no se permite cancelar ni modificar un pedido con estatus "En tránsito".
+- Búsqueda en vivo del pedido al escribir la orden de compra (PO).
+- Generación de reportes por rango de fechas, con atajos (7 días, 30 días, este año, histórico).
+- Indicadores de pedidos entregados a tiempo, retrasados y cancelados, con porcentaje de efectividad y tabla de desglose.
+
+**Controladores:** `SolicitudController.php` y `ReporteController.php`.
+
+### Issue #16 (Aaron2): Estructura del backend
+
+- **Migraciones y modelos:** `Pedido`, `Solicitud`, `Incidencia`, `Evidencia` y `Contacto`.
+- **Relaciones:** un `Pedido` tiene muchas `Solicitudes`, `Incidencias` y `Evidencias`; cada una pertenece a un `Pedido` (enlazadas por la orden de compra `po`).
+- **Validaciones de formularios** con Form Requests y mensajes en español:
+  `StorePedidoRequest`, `StoreSolicitudRequest`, `StoreIncidenciaRequest`, `StoreEvidenciaRequest` y `StoreContactoRequest`.
+- **Rutas RESTful** organizadas con `Route::resource()` para pedidos, solicitudes, incidencias, evidencias y reportes.
+- **Layout y formularios reutilizables:**
+  - `layouts/app.blade.php` (layout principal).
+  - `layouts/partials/navbar.blade.php`, `footer.blade.php` y `alerts.blade.php`.
+  - `partials/form_solicitud.blade.php` (mismo formulario para cancelación y modificación).
+- **Seeder** con datos de prueba (`DatabaseSeeder.php`).
+
+### Ejecución de migraciones y datos de prueba
+
+Después de configurar la base de datos en el archivo `.env`:
+
+```bash
+php artisan migrate --seed
+```
