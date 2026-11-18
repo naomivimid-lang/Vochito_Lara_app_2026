@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ConsultaController;
+use App\Http\Controllers\PedidoController;
 
 // Página principal
 Route::get('/', function () {
@@ -44,3 +45,16 @@ Route::view('/iniciar-sesion', 'vochito.iniciosesion')->name('vochito.iniciosesi
 
 // Índice
 Route::view('/indice', 'vochito.index')->name('vochito.index');
+
+// Conexión de pedidos con PostgreSQL
+Route::get('/pedidos/datos', [PedidoController::class, 'index']);
+Route::post('/pedidos', [PedidoController::class, 'store']);
+Route::post('/pedidos/{pedido}/incidencias', [PedidoController::class, 'guardarIncidencia']);
+
+// Consultar pedidos desde PostgreSQL con filtros y paginación
+Route::get('/productos/datos', [ConsultaController::class, 'productos'])
+    ->name('productos.datos');
+
+// Actualizar el estatus de un pedido en PostgreSQL
+Route::patch('/pedidos/{pedido}/estatus', [PedidoController::class, 'actualizarEstatus'])
+    ->name('pedidos.estatus');
