@@ -1,94 +1,39 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Catálogo - Bochito Envíos y Ventas</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Iconos Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <!-- Hoja de estilos del proyecto -->
-    <link rel="stylesheet" href="css/estilos.css" />
-    <link rel="stylesheet" href="css/utilidades.css">
-    <link rel="stylesheet" href="css/tema.css">
-    <script src="js/tema.js"></script>
-  </head>
-  <body class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
-      <div class="container">
-        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{{ route('vochito.inicio') }}">
-          <img src="img/logo.png" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top" />
-          <div class="d-flex flex-column lh-sm">
-            <span><i class="fa-solid fa-leaf"></i> Bochito</span>
-            <small>Comercio local</small>
-          </div>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar menú">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto align-items-lg-center">
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.nosotros') }}"><i class="fa-solid fa-users"></i> Nosotros</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.servicios') }}"><i class="fa-solid fa-store"></i> Servicios</a></li>
-            <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{ route('vochito.catalogo') }}"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{{ route('vochito.pedidos') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.productos') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.historial') }}"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.notificaciones') }}"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.incidencias') }}"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.evidencias') }}"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.cancelacion') }}"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.modificacion') }}"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
-              </ul>
-            </li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
-            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
-          </ul>
+@extends('layouts.app')
+
+@section('title', 'Catálogo')
+
+@section('header')
+    <h1 class="display-5 fw-bold">Catálogo de productos</h1>
+    <p class="lead">Pan, frutas, verduras, artesanías y más, directo de las tiendas locales de tu comunidad.</p>
+@endsection
+
+@section('content')
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <p class="text-muted mb-0">{{ $productos->total() }} productos disponibles de tiendas locales.</p>
+    <a class="btn btn-primary" href="{{ route('pedidos.create') }}"><i class="fa-solid fa-file-circle-plus"></i> Hacer un pedido</a>
+</div>
+
+<div class="row g-4">
+    @forelse ($productos as $p)
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 p-3">
+                <div class="card-body d-flex flex-column">
+                    <div class="icono-circulo fondo-azul rounded-circle d-flex align-items-center justify-content-center mb-3">
+                        <i class="fa-solid fa-box fs-4 icono-azul-oscuro" aria-hidden="true"></i>
+                    </div>
+                    <span class="small fw-bold texto-verde">
+                        {{ $p->stock > 0 ? "{$p->stock} disponibles" : 'Agotado' }}
+                    </span>
+                    <h2 class="h5 mt-1">{{ $p->nombre }}</h2>
+                    <p class="text-muted mb-3">{{ $p->descripcion }}</p>
+                    <strong class="fs-5 mt-auto">${{ number_format($p->precio, 2) }}</strong>
+                </div>
+            </div>
         </div>
-      </div>
-    </nav>
+    @empty
+        <p class="text-center text-muted">Aún no hay productos en el catálogo.</p>
+    @endforelse
+</div>
 
-    <header class="bg-primary text-white text-center py-5">
-      <div class="container py-3">
-        <h1 class="display-5 fw-bold">Catálogo de productos</h1>
-        <p class="lead">Pan, frutas, verduras, artesanías y más, directo de las tiendas locales de tu comunidad.</p>
-      </div>
-    </header>
-
-    <main class="container my-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <p class="text-muted mb-0"><span id="totalProductos"></span> productos de tiendas locales, por categoría.</p>
-        <a class="btn btn-primary" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Buscar con filtros</a>
-      </div>
-
-      <!-- Botones de categoría (los llena js/catalogo.js) -->
-      <nav class="d-flex flex-wrap gap-2 mb-5" id="menuCategorias" aria-label="Categorías"></nav>
-
-      <div id="listaCatalogo"></div>
-    </main>
-
-    <footer class="bg-custom-dark text-white text-center py-3 mt-auto">
-      <div class="container">
-        <p class="small mb-2">
-          <a class="link-light" href="{{ route('vochito.ayuda') }}">Ayuda</a> ·
-          <a class="link-light" href="{{ route('vochito.privacidad') }}">Privacidad</a> ·
-          <a class="link-light" href="{{ route('vochito.rnf') }}">Requerimientos no funcionales</a>
-        </p>
-        <p class="mb-0 small">&copy; 2026 Bochito - Envíos y Ventas. Todos los derechos reservados.</p>
-      </div>
-    </footer>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/productos-locales.js"></script>
-    <script src="js/catalogo.js"></script>
-  </body>
-</html>
+<div class="mt-4">{{ $productos->links() }}</div>
+@endsection

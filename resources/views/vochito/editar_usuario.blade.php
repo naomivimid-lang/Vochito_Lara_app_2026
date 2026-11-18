@@ -1,88 +1,58 @@
+@extends('layouts.app')
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar usuario - Vochito</title>
+@section('title', 'Editar usuario')
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+@section('header')
+    <h1 class="display-5 fw-bold">Editar usuario</h1>
+    <p class="lead">{{ $usuario->email }}</p>
+@endsection
 
-<body class="bg-light">
-
-<div class="container mt-5">
-
-    <div class="card shadow mx-auto" style="max-width: 600px;">
-
-        <div class="card-header bg-dark text-white">
-            <h4 class="mb-0">Editar usuario</h4>
-        </div>
-
-        <div class="card-body">
-
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            <form action="{{ route('usuarios.update', $usuario->id) }}" method="POST">
-
+@section('content')
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 p-4">
+            <form action="{{ route('usuarios.update', $usuario) }}" method="POST" novalidate>
                 @csrf
                 @method('PUT')
 
                 <div class="mb-3">
-                    <label class="form-label">Nombre completo</label>
-                    <input
-                        type="text"
-                        name="name"
-                        class="form-control"
-                        value="{{ old('name', $usuario->name) }}"
-                        required>
+                    <label for="name" class="form-label fw-bold">Nombre completo <span class="text-danger">*</span></label>
+                    <input type="text" id="name" name="name" minlength="3" maxlength="120" required
+                           class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $usuario->name) }}">
+                    @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Correo electrónico</label>
-                    <input
-                        type="email"
-                        name="email"
-                        class="form-control"
-                        value="{{ old('email', $usuario->email) }}"
-                        required>
+                    <label for="email" class="form-label fw-bold">Correo electrónico <span class="text-danger">*</span></label>
+                    <input type="email" id="email" name="email" required
+                           class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $usuario->email) }}">
+                    @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Nueva contraseña</label>
-                    <input
-                        type="password"
-                        name="password"
-                        class="form-control"
-                        placeholder="Dejar vacío para conservar la actual">
+                    <label for="password" class="form-label fw-bold">Nueva contraseña</label>
+                    <input type="password" id="password" name="password" minlength="8" autocomplete="new-password"
+                           placeholder="Dejar vacío para conservar la actual"
+                           class="form-control @error('password') is-invalid @enderror">
+                    @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    <input type="checkbox" id="is_admin" name="is_admin" value="1" role="switch" class="form-check-input"
+                           @checked(old('is_admin', $usuario->is_admin))
+                           @disabled($usuario->is(auth()->user()))>
+                    <label for="is_admin" class="form-check-label">Administrador</label>
+                    @if ($usuario->is(auth()->user()))
+                        <div class="form-text">No puedes quitarte el permiso de administrador a ti mismo.</div>
+                    @endif
                 </div>
 
                 <div class="d-flex justify-content-between">
-
-                    <a href="{{ route('usuarios.index') }}"
-                       class="btn btn-secondary">
-                        Regresar
-                    </a>
-
-                    <button type="submit" class="btn btn-primary">
-                        Guardar cambios
-                    </button>
-
+                    <a href="{{ route('usuarios.index') }}" class="btn btn-outline-secondary px-4">Regresar</a>
+                    <button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
                 </div>
-
             </form>
-
         </div>
     </div>
 </div>
-
-</body>
-</html>
+@endsection
