@@ -1,9 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EvidenciaController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\NotificacionController;
-use App\Http\Controllers\EvidenciaController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\ProductoController;
+
+// CRUD de Productos y Pedidos
+Route::resource('productos', ProductoController::class)->except('show');
+Route::resource('pedidos', PedidoController::class)->except('show');
+Route::patch('pedidos/{pedido}/estatus', [PedidoController::class, 'actualizarEstatus'])->name('pedidos.estatus');
 
 // Página principal
 Route::get('/', function () {
@@ -13,10 +20,8 @@ Route::get('/', function () {
 // Páginas de Vochito
 Route::view('/nosotros', 'vochito.nosotros')->name('vochito.nosotros');
 Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
-Route::view('/catalogo', 'vochito.catalogo')->name('vochito.catalogo');
+Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('vochito.catalogo');
 Route::view('/busquedas', 'vochito.busquedas')->name('vochito.busquedas');
-Route::view('/pedidos', 'vochito.pedidos')->name('vochito.pedidos');
-Route::view('/productos', 'vochito.productos')->name('vochito.productos');
 Route::view('/historial', 'vochito.historial')->name('vochito.historial');
 
 // CRUD de Notificaciones
