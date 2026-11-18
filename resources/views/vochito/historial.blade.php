@@ -63,6 +63,22 @@
     </header>
 
     <main class="container my-5 flex-grow-1">
+        <form method="GET" action="{{ route('vochito.historial') }}" class="d-flex flex-wrap gap-2 align-items-end mb-4">
+            <div>
+                <label for="estatus" class="form-label fw-bold">Filtrar por estatus</label>
+                <select id="estatus" name="estatus" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach (\App\Models\Pedido::ESTATUS as $e)
+                        <option value="{{ $e }}" @selected($estatusSeleccionado === $e)>{{ $e }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <button type="submit" class="btn btn-outline-primary"><i class="fa-solid fa-filter"></i> Filtrar</button>
+            @if ($estatusSeleccionado)
+                <a href="{{ route('vochito.historial') }}" class="btn btn-outline-secondary">Limpiar</a>
+            @endif
+        </form>
+
         <div class="card shadow-sm border-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -76,32 +92,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- shortcut: datos de ejemplo fijos; leerlos de la API cuando exista el backend -->
-                        <tr>
-                            <td class="fw-bold">PO-2025-0118</td>
-                            <td>Huacales de madera</td>
-                            <td>100</td>
-                            <td>28 ago 2026</td>
-                            <td><span class="badge text-bg-success">Entregado</span></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">PO-2025-0112</td>
-                            <td>Bolsas de papel kraft</td>
-                            <td>1500</td>
-                            <td>20 ago 2026</td>
-                            <td><span class="badge text-bg-success">Entregado</span></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold">PO-2025-0109</td>
-                            <td>Cajas de embalaje</td>
-                            <td>40</td>
-                            <td>15 ago 2026</td>
-                            <td><span class="badge text-bg-danger">Cancelado</span></td>
-                        </tr>
+                        @forelse ($pedidos as $pedido)
+                            <tr>
+                                <td class="fw-bold text-nowrap">PO-{{ str_pad($pedido->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                <td>{{ $pedido->producto->nombre ?? 'Producto eliminado' }}</td>
+                                <td>{{ $pedido->cantidad }}</td>
+                                <td class="text-nowrap">{{ $pedido->entrega->format('d/m/Y') }}</td>
+                                <td><span class="badge text-bg-{{ \App\Models\Pedido::COLOR_ESTATUS[$pedido->estatus] ?? 'secondary' }}">{{ $pedido->estatus }}</span></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="text-center text-muted py-4">No hay pedidos{{ $estatusSeleccionado ? ' con ese estatus' : '' }}.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
+        <div class="mt-4">{{ $pedidos->links() }}</div>
     </main>
 
     <footer class="bg-custom-dark text-white text-center py-3 mt-auto">

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\EvidenciaController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\NotificacionController;
@@ -34,8 +35,11 @@ Route::post('/reporte-desempeno/generar', [ReporteController::class, 'generar'])
 Route::view('/nosotros', 'vochito.nosotros')->name('vochito.nosotros');
 Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
 Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('vochito.catalogo');
-Route::view('/busquedas', 'vochito.busquedas')->name('vochito.busquedas');
-Route::view('/historial', 'vochito.historial')->name('vochito.historial');
+
+// Módulo de consultas: búsquedas, historial y tiempo de respuesta (PostgreSQL)
+Route::get('/busquedas', [ConsultaController::class, 'busquedas'])->name('vochito.busquedas');
+Route::get('/historial', [ConsultaController::class, 'historial'])->name('vochito.historial');
+Route::get('/tiempo-respuesta', [ConsultaController::class, 'tiempoRespuesta'])->name('vochito.tiempo_respuesta');
 
 // CRUD de Notificaciones
 Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('vochito.notificaciones');
@@ -68,7 +72,6 @@ Route::view('/rnf03', 'vochito.RNF03')->name('vochito.rnf03');
 Route::view('/rnf04', 'vochito.RNF04')->name('vochito.rnf04');
 Route::view('/rnf05', 'vochito.RNF05')->name('vochito.rnf05');
 Route::view('/rnf06', 'vochito.RNF06')->name('vochito.rnf06');
-Route::view('/tiempo-respuesta', 'vochito.tiempo_respuesta')->name('vochito.tiempo_respuesta');
 Route::view('/iniciar-sesion', 'vochito.iniciosesion')->name('vochito.iniciosesion');
 Route::view('/indice', 'vochito.index')->name('vochito.index');
 
