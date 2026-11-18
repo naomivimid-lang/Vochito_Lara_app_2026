@@ -108,49 +108,24 @@
               <tr>
                 <th>Consulta a la API</th>
                 <th>Objetivo</th>
-                <th>Medición</th>
+                <th>Medición real</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  <div class="d-flex align-items-center gap-2">
-                    <span
-                      class="icon-circle icon-circle-blue circulo-36-chico"
-                      ><i class="bi bi-arrow-repeat"></i
-                    ></span>
-                    Estatus de un pedido
-                  </div>
-                </td>
-                <td>2 segundos o menos</td>
-                <td><span class="badge text-bg-secondary">Por medir</span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex align-items-center gap-2">
-                    <span
-                      class="icon-circle icon-circle-green circulo-36-chico"
-                      ><i class="bi bi-truck"></i
-                    ></span>
-                    Trazabilidad (etapas del pedido)
-                  </div>
-                </td>
-                <td>2 segundos o menos</td>
-                <td><span class="badge text-bg-secondary">Por medir</span></td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="d-flex align-items-center gap-2">
-                    <span
-                      class="icon-circle icon-circle-yellow circulo-36-chico"
-                      ><i class="bi bi-geo-alt"></i
-                    ></span>
-                    Búsqueda por PO, fechas o estatus
-                  </div>
-                </td>
-                <td>2 segundos o menos</td>
-                <td><span class="badge text-bg-secondary">Por medir</span></td>
-              </tr>
+              @foreach ($metricas as $m)
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="icon-circle {{ $m['color'] }} circulo-36-chico"><i class="bi {{ $m['icono'] }}"></i></span>
+                      {{ $m['consulta'] }}
+                    </div>
+                  </td>
+                  <td>{{ $m['objetivo'] }}</td>
+                  <td>
+                    <span class="badge text-bg-{{ $m['cumple'] ? 'success' : 'danger' }}">{{ $m['medicion'] }}</span>
+                  </td>
+                </tr>
+              @endforeach
             </tbody>
           </table>
         </div>
