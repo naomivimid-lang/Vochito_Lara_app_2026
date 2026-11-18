@@ -221,3 +221,17 @@ Contribuir al desarrollo de la aplicación mediante la implementación de funcio
 ![Página principal](public/img/HG1.png)
 
 ![Página principal](public/img/HHG2.png)
+
+
+---
+
+## Módulo de Cancelaciones, Modificaciones y Reportes
+
+**Nombre:** Lorenzana Hernández Aarón Dahir
+
+### Actividades desarrolladas
+
+- **Cancelaciones y modificaciones (`/cancelacion`, `/modificacion`):** registro, consulta, filtrado por estado, aprobación, rechazo y eliminación de solicitudes mediante `SolicitudController`, usando un formulario reutilizable (`partials/form_solicitud.blade.php`) integrado al layout principal (`layouts/app.blade.php`).
+- **Validaciones y regla de negocio:** validación en el servidor con `StoreSolicitudRequest` y `UpdateSolicitudRequest`; bloqueo de solicitudes cuando el pedido ya está en estatus *En tránsito* y cambio automático del pedido a *Cancelado* al aprobar una cancelación.
+- **Reporte de desempeño (`/reporte-desempeno`):** cálculo de pedidos entregados a tiempo, retrasados y cancelados por rango de fechas mediante `ReporteController` y `GenerarReporteRequest`.
+- **Base de datos y rutas:** migración `solicitudes` con relación `belongsTo` / `hasMany` hacia `Pedido` (`pedido_id`), rutas RESTful con `Route::resource()` y datos de prueba en `SolicitudSeeder`.
