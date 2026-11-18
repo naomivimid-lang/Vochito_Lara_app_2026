@@ -1,11 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EvidenciaController;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\UserController;
 
 // CRUD de Productos y Pedidos
 Route::resource('productos', ProductoController::class)->except('show');
@@ -54,3 +56,20 @@ Route::view('/rnf06', 'vochito.RNF06')->name('vochito.rnf06');
 Route::view('/tiempo-respuesta', 'vochito.tiempo_respuesta')->name('vochito.tiempo_respuesta');
 Route::view('/iniciar-sesion', 'vochito.iniciosesion')->name('vochito.iniciosesion');
 Route::view('/indice', 'vochito.index')->name('vochito.index');
+
+// Registro de usuarios e inicio de sesión (solo para quien no ha iniciado sesión)
+Route::middleware('guest')->group(function () {
+    Route::view('/registro', 'vochito.registro')->name('registro');
+    Route::post('/registro', [AuthController::class, 'register'])->name('registro.store');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login');
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+// Administración de usuarios (solo administradores)
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
+    Route::get('/usuarios/{usuario}/editar', [UserController::class, 'edit'])->name('usuarios.edit');
+    Route::put('/usuarios/{usuario}', [UserController::class, 'update'])->name('usuarios.update');
+    Route::delete('/usuarios/{usuario}', [UserController::class, 'destroy'])->name('usuarios.destroy');
+});

@@ -23,6 +23,11 @@ Aplicación web CRUD hecha con **Laravel 12** y **PostgreSQL** para gestionar lo
 - **Notificaciones** (`/notificaciones`): avisos del sistema.
 - **Evidencias** (`/evidencias`): evidencias de entrega.
 
+**Cuentas y usuarios**
+- **Inicio de sesión** (`/iniciar-sesion`) y **registro** (`/registro`), con contraseñas cifradas y un límite de 5 intentos por minuto.
+- **Usuarios** (`/usuarios`): solo para administradores. Permite buscar, editar, dar o quitar el permiso de administrador y eliminar cuentas.
+- `php artisan migrate --seed` crea un administrador y un cliente de prueba. Sus correos y su contraseña están en `database/seeders/DatabaseSeeder.php`.
+
 ## Tecnologías
 
 | Herramienta | Versión |
