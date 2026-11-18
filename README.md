@@ -18,6 +18,11 @@ Aplicación web CRUD hecha con **Laravel 12** y **PostgreSQL** para gestionar lo
 
 **Catálogo** (`/catalogo`): tarjetas con los productos activos, leídos de la base de datos.
 
+**Otros módulos del equipo**
+- **Incidencias** (`/incidencias`): registro y seguimiento de problemas en los pedidos.
+- **Notificaciones** (`/notificaciones`): avisos del sistema.
+- **Evidencias** (`/evidencias`): evidencias de entrega.
+
 ## Tecnologías
 
 | Herramienta | Versión |
@@ -49,6 +54,8 @@ Aplicación web CRUD hecha con **Laravel 12** y **PostgreSQL** para gestionar lo
    cp .env.example .env
    php artisan key:generate
    ```
+
+   En Windows PowerShell, usa `Copy-Item .env.example .env` en lugar de `cp`.
 
 4. Crea la base de datos en PostgreSQL:
 
@@ -120,6 +127,9 @@ routes/web.php
 | PATCH | `/pedidos/{id}/estatus` | Cambiar estatus |
 | DELETE | `/pedidos/{id}` | Cancelar pedido |
 | GET | `/catalogo` | Catálogo de productos activos |
+| GET / POST / PUT / DELETE | `/incidencias` | CRUD de incidencias |
+| GET / POST / PUT / DELETE | `/notificaciones` | CRUD de notificaciones |
+| GET / POST / PUT / DELETE | `/evidencias` | CRUD de evidencias |
 
 Puedes ver la lista completa con `php artisan route:list`.
 
@@ -134,5 +144,17 @@ Puedes ver la lista completa con `php artisan route:list`.
 ## Equipo
 
 | Integrante | Responsabilidad |
+|---|---|
 | Miguel Angel Guerrero Lopez(MAngelGL777) 2531126234 | Migraciones, modelos, validaciones y CRUD de productos y pedidos |
+| Vital Millán Dayra Naomi | |
+| Carpio Campos Rodrigo | |
+| Ortiz Salguero Geazul Guadalupe | |
+| Lorenzana Hernández Aarón Dahir | |
 
+## Evidencia
+
+![Imagen del proyecto](public/img/fff1.png)
+
+![Imagen del proyecto](<Captura de pantalla 2026-11-04 145333.png>)
+
+**Vochito Laravel – Proyecto académico 2026.**

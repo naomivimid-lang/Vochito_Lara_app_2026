@@ -1,9 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EvidenciaController;
+use App\Http\Controllers\IncidenciaController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProductoController;
 
+// CRUD de Productos y Pedidos
 Route::resource('productos', ProductoController::class)->except('show');
 Route::resource('pedidos', PedidoController::class)->except('show');
 Route::patch('pedidos/{pedido}/estatus', [PedidoController::class, 'actualizarEstatus'])->name('pedidos.estatus');
@@ -19,9 +23,23 @@ Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
 Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('vochito.catalogo');
 Route::view('/busquedas', 'vochito.busquedas')->name('vochito.busquedas');
 Route::view('/historial', 'vochito.historial')->name('vochito.historial');
-Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
-Route::view('/incidencias', 'vochito.incidencias')->name('vochito.incidencias');
-Route::view('/evidencias', 'vochito.evidencias')->name('vochito.evidencias');
+
+// CRUD de Notificaciones
+Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('vochito.notificaciones');
+Route::post('/notificaciones', [NotificacionController::class, 'store'])->name('notificaciones.store');
+Route::put('/notificaciones/{id}', [NotificacionController::class, 'update'])->name('notificaciones.update');
+Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
+// CRUD de Incidencias
+Route::get('/incidencias', [IncidenciaController::class, 'index'])->name('vochito.incidencias');
+Route::post('/incidencias', [IncidenciaController::class, 'store'])->name('incidencias.store');
+Route::put('/incidencias/{id}', [IncidenciaController::class, 'update'])->name('incidencias.update');
+Route::delete('/incidencias/{id}', [IncidenciaController::class, 'destroy'])->name('incidencias.destroy');
+// CRUD de Evidencias
+Route::get('/evidencias', [EvidenciaController::class, 'index'])->name('vochito.evidencias');
+Route::post('/evidencias', [EvidenciaController::class, 'store'])->name('evidencias.store');
+Route::put('/evidencias/{id}', [EvidenciaController::class, 'update'])->name('evidencias.update');
+Route::delete('/evidencias/{id}', [EvidenciaController::class, 'destroy'])->name('evidencias.destroy');
+// Otras páginas
 Route::view('/cancelacion', 'vochito.cancelacion')->name('vochito.cancelacion');
 Route::view('/modificacion', 'vochito.modificacion')->name('vochito.modificacion');
 Route::view('/reporte-desempeno', 'vochito.reporte_desempeno')->name('vochito.reporte_desempeno');
