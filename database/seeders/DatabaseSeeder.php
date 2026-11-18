@@ -13,11 +13,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(ProductoSeeder::class);
-        
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            ProductoSeeder::class,
+            SolicitudSeeder::class,
         ]);
+
+        // Usuarios de prueba para la demostración (contraseña de ejemplo, no usar en producción)
+        if (!User::where('email', 'admin@bochito.test')->exists()) {
+            User::factory()->create([
+                'name' => 'Administrador Bochito',
+                'email' => 'admin@bochito.test',
+                'password' => 'bochito2026',
+                'is_admin' => true,
+            ]);
+        }
+
+        if (!User::where('email', 'cliente@bochito.test')->exists()) {
+            User::factory()->create([
+                'name' => 'Cliente de prueba',
+                'email' => 'cliente@bochito.test',
+                'password' => 'bochito2026',
+            ]);
+        }
     }
 }

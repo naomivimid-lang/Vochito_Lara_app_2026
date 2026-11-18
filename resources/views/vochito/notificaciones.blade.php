@@ -1,4 +1,5 @@
-﻿<!doctype html>
+﻿
+<!doctype html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -18,6 +19,7 @@
     <!-- Barra de navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
         <div class="container">
+
             <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{{ route('vochito.inicio') }}">
                 <img src="{{ asset('img/logo.png') }}" alt="Logo Bochito" width="60" height="60" class="rounded-circle">
                 <div class="d-flex flex-column lh-sm">
@@ -26,78 +28,129 @@
                 </div>
             </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Mostrar menú">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
-                    <li class="nav-item"><a class="nav-link" href="{{ route('vochito.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('vochito.nosotros') }}"><i class="fa-solid fa-users"></i> Nosotros</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('vochito.servicios') }}"><i class="fa-solid fa-store"></i> Servicios</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('vochito.catalogo') }}"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.inicio') }}">
+                            <i class="fa-solid fa-house"></i> Inicio
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.nosotros') }}">
+                            <i class="fa-solid fa-users"></i> Nosotros
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.servicios') }}">
+                            <i class="fa-solid fa-store"></i> Servicios
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.catalogo') }}">
+                            <i class="fa-solid fa-basket-shopping"></i> Catálogo
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.busquedas') }}">
+                            <i class="fa-solid fa-magnifying-glass"></i> Búsquedas
+                        </a>
+                    </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-clipboard-list"></i> Pedidos
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('vochito.pedidos') }}">Registrar pedido</a></li>
-                            <li><a class="dropdown-item" href="{{ route('vochito.productos') }}">Estatus y búsqueda</a></li>
-                            <li><a class="dropdown-item" href="{{ route('vochito.historial') }}">Historial</a></li>
-                            <li><a class="dropdown-item active" href="{{ route('vochito.notificaciones') }}">Notificaciones</a></li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('pedidos.create') }}">
+                                    <i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('pedidos.index') }}">
+                                    <i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('productos.index') }}">
+                                    <i class="fa-solid fa-box fa-fw"></i> Productos
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.historial') }}">
+                                    <i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item active" aria-current="page"
+                                    href="{{ route('vochito.notificaciones') }}">
+                                    <i class="fa-solid fa-bell fa-fw"></i> Notificaciones
+                                </a>
+                            </li>
+
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('vochito.incidencias') }}">Registrar incidencia</a></li>
-                            <li><a class="dropdown-item" href="{{ route('vochito.evidencias') }}">Evidencia de entrega</a></li>
-                            <li><a class="dropdown-item" href="{{ route('vochito.cancelacion') }}">Cancelar pedido</a></li>
-                            <li><a class="dropdown-item" href="{{ route('vochito.modificacion') }}">Modificar pedido</a></li>
-                            <li><a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}">Reporte de desempeño</a></li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.incidencias') }}">
+                                    <i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.evidencias') }}">
+                                    <i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.cancelacion') }}">
+                                    <i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.modificacion') }}">
+                                    <i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}">
+                                    <i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño
+                                </a>
+                            </li>
+
                         </ul>
                     </li>
 
-                    <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}">Contacto</a></li>
-                    <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}">Iniciar sesión</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.contacto') }}">
+                            <i class="fa-solid fa-envelope"></i> Contacto
+                        </a>
+                    </li>
+
+                    @include('partials.sesion')
+
                 </ul>
             </div>
-      <div class="container">
-        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{{ route('vochito.inicio') }}">
-          <img src="img/logo.png" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top" />
-          <div class="d-flex flex-column lh-sm">
-            <span><i class="fa-solid fa-leaf"></i> Bochito</span>
-            <small>Comercio local</small>
-          </div>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar menú">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto align-items-lg-center">
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.nosotros') }}"><i class="fa-solid fa-users"></i> Nosotros</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.servicios') }}"><i class="fa-solid fa-store"></i> Servicios</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.catalogo') }}"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{{ route('pedidos.create') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('pedidos.index') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
-                <li><a class="dropdown-item" href="{{ route('productos.index') }}"><i class="fa-solid fa-box fa-fw"></i> Productos</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.historial') }}"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
-                <li><a class="dropdown-item active" aria-current="page" href="{{ route('vochito.notificaciones') }}"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.incidencias') }}"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.evidencias') }}"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.cancelacion') }}"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.modificacion') }}"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
-              </ul>
-            </li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
-            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
-          </ul>
         </div>
     </nav>
 
@@ -113,14 +166,14 @@
 
         <!-- Mensajes -->
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
             </div>
         @endif
 
         @if($errors->any())
-            <div class="alert alert-danger">
+            <div class="alert alert-danger" role="alert">
                 <strong>Revisa los siguientes datos:</strong>
                 <ul class="mb-0 mt-2">
                     @foreach($errors->all() as $error)
@@ -143,16 +196,19 @@
                     @csrf
 
                     <div class="row g-3">
+
                         <div class="col-md-4">
                             <label class="form-label">Orden de compra (PO)</label>
                             <input type="text" name="orden_compra" class="form-control"
-                                placeholder="PO-2026-0005" value="{{ old('orden_compra') }}" required>
+                                placeholder="PO-2026-0005"
+                                value="{{ old('orden_compra') }}" required>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label">Título</label>
                             <input type="text" name="titulo" class="form-control"
-                                placeholder="Pedido entregado" value="{{ old('titulo') }}" required>
+                                placeholder="Pedido entregado"
+                                value="{{ old('titulo') }}" required>
                         </div>
 
                         <div class="col-md-4">
@@ -168,7 +224,8 @@
                         <div class="col-12">
                             <label class="form-label">Mensaje</label>
                             <textarea name="mensaje" class="form-control" rows="3"
-                                placeholder="Escribe el aviso de la notificación..." required>{{ old('mensaje') }}</textarea>
+                                placeholder="Escribe el aviso de la notificación..."
+                                required>{{ old('mensaje') }}</textarea>
                         </div>
 
                         <div class="col-12 text-end">
@@ -176,6 +233,7 @@
                                 <i class="fa-solid fa-plus"></i> Registrar notificación
                             </button>
                         </div>
+
                     </div>
                 </form>
             </div>
@@ -261,7 +319,8 @@
                                 <!-- Mostrar formulario de edición -->
                                 <button class="btn btn-sm btn-outline-secondary" type="button"
                                     data-bs-toggle="collapse"
-                                    data-bs-target="#editar{{ $notificacion->id }}">
+                                    data-bs-target="#editar{{ $notificacion->id }}"
+                                    aria-expanded="false">
                                     <i class="fa-solid fa-pen"></i> Editar
                                 </button>
 
@@ -320,6 +379,7 @@
                                         <button type="submit" class="btn btn-primary btn-sm">
                                             <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
                                         </button>
+
                                     </form>
                                 </div>
                             </div>

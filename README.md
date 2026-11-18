@@ -2,9 +2,9 @@
 
 ## Descripción del proyecto
 
-**VOCHITO** es una aplicación web desarrollada con Laravel 12 que adapta el sistema original de Vochito a una estructura basada en el patrón MVC (Modelo-Vista-Controlador).
+**VOCHITO** es una aplicación web desarrollada con Laravel 12 que adapta el sistema original de Vochito a una estructura basada en el patrón Modelo-Vista-Controlador (MVC).
 
-El sistema está enfocado en la gestión de productos y pedidos de tiendas locales, además de contar con diferentes módulos para el seguimiento y administración de las operaciones.
+El sistema está enfocado en la gestión de productos y pedidos de tiendas locales, además de contar con módulos para el seguimiento y administración de las operaciones.
 
 El proyecto forma parte de una práctica académica orientada al desarrollo web, el uso de rutas, vistas Blade, controladores, peticiones HTTP y operaciones CRUD.
 
@@ -14,15 +14,16 @@ Desarrollar una aplicación web con Laravel que permita administrar productos y 
 
 ## Tecnologías utilizadas
 
-- **PHP:** lenguaje de programación del lado del servidor.
-- **Laravel 12:** framework de desarrollo web.
-- **Blade:** motor de plantillas para las vistas.
-- **PostgreSQL:** sistema de gestión de base de datos.
-- **HTML5 y CSS3:** estructura y diseño de las interfaces.
-- **JavaScript:** funcionalidades e interactividad.
-- **Bootstrap:** componentes y diseño adaptable.
-- **Git y GitHub:** control de versiones y colaboración.
-- **Visual Studio Code:** entorno de desarrollo.
+- PHP 8.2 o superior.
+- Laravel 12.
+- Blade.
+- PostgreSQL.
+- HTML5 y CSS3.
+- JavaScript.
+- Bootstrap 5.3.
+- Font Awesome 6.5.
+- Git y GitHub.
+- Visual Studio Code.
 
 ## Funcionalidades
 
@@ -34,6 +35,8 @@ Desarrollar una aplicación web con Laravel que permita administrar productos y 
 - Eliminar productos.
 - Buscar productos por nombre.
 - Consultar el catálogo de productos activos.
+- Evitar nombres de productos duplicados.
+- Impedir eliminar productos que tengan pedidos relacionados.
 
 ### Pedidos
 
@@ -43,13 +46,20 @@ Desarrollar una aplicación web con Laravel que permita administrar productos y 
 - Cancelar pedidos.
 - Filtrar por cliente, estatus y fechas de entrega.
 - Actualizar el estatus de los pedidos.
+- Validar cantidades y fechas de entrega.
 
-### Otros módulos del sistema
+### Usuarios y autenticación
 
-El proyecto también conserva interfaces para:
+- Inicio de sesión.
+- Registro de usuarios.
+- Cierre de sesión.
+- Administración de usuarios.
+- Edición y eliminación de cuentas.
+- Control de permisos de administrador.
+- Validación de credenciales.
 
-- Inicio y navegación.
-- Nosotros y servicios.
+### Otros módulos
+
 - Búsquedas e historial.
 - Incidencias.
 - Notificaciones.
@@ -66,11 +76,10 @@ Vochito_Lara_app_2026/
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
+│   │   ├── Middleware/
 │   │   └── Requests/
-│   ├── Models/
-│   └── Providers/
+│   └── Models/
 ├── database/
-│   ├── factories/
 │   ├── migrations/
 │   └── seeders/
 ├── public/
@@ -81,8 +90,6 @@ Vochito_Lara_app_2026/
 │   └── views/
 │       ├── layouts/
 │       ├── partials/
-│       ├── pedidos/
-│       ├── productos/
 │       └── vochito/
 ├── routes/
 │   └── web.php
@@ -93,27 +100,32 @@ Vochito_Lara_app_2026/
 
 ## Operaciones CRUD
 
-El módulo de productos y el módulo de pedidos utilizan las siguientes operaciones:
+Los módulos que administran registros utilizan las operaciones correspondientes:
 
-| Método HTTP | Operación | Descripción                     |
-| ----------- | --------- | ------------------------------- |
-| GET         | Read      | Consultar registros.            |
-| POST        | Create    | Registrar nuevos registros.     |
-| PUT         | Update    | Modificar registros existentes. |
-| DELETE      | Delete    | Eliminar registros.             |
+| Método HTTP | Operación | Descripción                                                        |
+| ----------- | --------- | ------------------------------------------------------------------ |
+| GET         | Read      | Consultar registros.                                               |
+| POST        | Create    | Registrar nuevos registros.                                        |
+| PUT         | Update    | Modificar registros existentes.                                    |
+| DELETE      | Delete    | Eliminar registros.                                                |
+| PATCH       | Update    | Actualizar parcialmente un registro, como el estatus de un pedido. |
 
-Para cambiar el estatus de un pedido también se utiliza una petición PATCH.
+No todos los módulos requieren las cuatro operaciones; por ejemplo, las búsquedas y los reportes se enfocan principalmente en consultas.
 
 ## Base de datos
 
-La aplicación cuenta con migraciones y modelos para las tablas principales:
+La aplicación utiliza modelos y migraciones para organizar la información.
 
-| Tabla     | Información                                                          |
-| --------- | -------------------------------------------------------------------- |
-| productos | Nombre, descripción, precio, stock y estado del producto.            |
-| pedidos   | Cliente, producto relacionado, cantidad, fecha de entrega y estatus. |
+Entre las tablas utilizadas se encuentran:
 
-La relación entre productos y pedidos se establece mediante la llave foránea `producto_id`.
+| Tabla       | Información                                                 |
+| ----------- | ----------------------------------------------------------- |
+| productos   | Nombre, descripción, precio, stock y estado.                |
+| pedidos     | Cliente, producto relacionado, cantidad, entrega y estatus. |
+| solicitudes | Solicitudes de cancelación y modificación.                  |
+| users       | Información de usuarios y permisos.                         |
+
+La relación entre productos y pedidos se establece mediante la llave foránea `producto_id`. Las solicitudes se relacionan con los pedidos mediante `pedido_id`.
 
 ## Instalación y ejecución
 
@@ -151,9 +163,9 @@ php artisan key:generate
 
 ### 6. Configurar PostgreSQL
 
-Crear una base de datos para el proyecto y configurar las credenciales correspondientes en el archivo `.env`.
+Crear una base de datos y configurar las credenciales correspondientes en el archivo `.env`.
 
-Ejemplo de configuración:
+Ejemplo:
 
 ```env
 DB_CONNECTION=pgsql
@@ -178,54 +190,6 @@ php artisan serve
 
 Abrir en el navegador:
 
-```text
-http://127.0.0.1:8000
 ```
 
-## Rutas principales
-
-| Método | Ruta                         | Función                         |
-| ------ | ---------------------------- | ------------------------------- |
-| GET    | `/productos`                 | Consultar productos.            |
-| GET    | `/productos/create`          | Mostrar formulario de registro. |
-| POST   | `/productos`                 | Registrar producto.             |
-| GET    | `/productos/{producto}/edit` | Mostrar formulario de edición.  |
-| PUT    | `/productos/{producto}`      | Actualizar producto.            |
-| DELETE | `/productos/{producto}`      | Eliminar producto.              |
-| GET    | `/pedidos`                   | Consultar pedidos.              |
-| GET    | `/pedidos/create`            | Mostrar formulario de registro. |
-| POST   | `/pedidos`                   | Registrar pedido.               |
-| GET    | `/pedidos/{pedido}/edit`     | Mostrar formulario de edición.  |
-| PUT    | `/pedidos/{pedido}`          | Actualizar pedido.              |
-| PATCH  | `/pedidos/{pedido}/estatus`  | Actualizar estatus.             |
-| DELETE | `/pedidos/{pedido}`          | Cancelar pedido.                |
-| GET    | `/catalogo`                  | Consultar catálogo.             |
-
-Para consultar todas las rutas registradas:
-
-```bash
-php artisan route:list
 ```
-
-## Validaciones y seguridad
-
-- Los formularios utilizan protección CSRF mediante `@csrf`.
-- Las operaciones PUT, PATCH y DELETE utilizan `@method`.
-- Los datos se validan en el servidor.
-- Se utilizan controladores y modelos para organizar la aplicación.
-- Las credenciales de conexión se configuran en `.env`.
-- Las vistas Blade utilizan el mecanismo de escape de Laravel.
-
-## Equipo de trabajo
-
-- Vital Millán Dayra Naomi.
-- Guerrero López Miguel Ángel.
-- Carpio Campos Rodrigo.
-- Ortiz Salguero Geazul Guadalupe.
-- Lorenzana Hernández Aarón Dahir.
-
-## Evidencias
-
-Las capturas de pantalla del desarrollo se encuentran en la carpeta `docs/capturas/`.
-
-**VOCHITO – Proyecto académico 2026.**

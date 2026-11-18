@@ -133,7 +133,9 @@ h6,
   color: var(--primary-color);
 }
 
-.btn-secondary-custom:hover {
+.btn-secondary-custom:hover,
+.btn-secondary-custom.show,
+.btn-secondary-custom:active {
   background-color: var(--dorado-claro);
   color: var(--primary-color);
 }
