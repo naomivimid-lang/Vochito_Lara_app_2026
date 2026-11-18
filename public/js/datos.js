@@ -1,110 +1,284 @@
-/*
- * datos.js - Datos y sesión compartidos (prototipo)
- * Lo usan iniciosesion.html, pedidos.html y productos.html.
- * En el proyecto real esto lo reemplaza el backend (API REST + base de datos).
- * Aquí los pedidos se guardan en localStorage y la sesión en sessionStorage.
- */
-const Bochito = (() => {
-  const ESTADOS = ["Orden recibida", "En fabricación", "Control de calidad", "Empaquetado", "En tránsito"];
-  const COLOR_ESTATUS = {
-    "Orden recibida": "secondary",
-    "En fabricación": "warning",
-    "Control de calidad": "info",
-    Empaquetado: "primary",
-    "En tránsito": "success",
-  };
-  const CLAVE_PEDIDOS = "bochito_pedidos";
-  const CLAVE_SESION = "bochito_sesion";
+// Conexión de pedidos con PostgreSQL
 
-  const PEDIDOS_INICIALES = [
-    { id: 1, po: "PO-2026-0001", cliente: "Frutería Don Chuy", producto: "Huacales de madera", cantidad: 120, entrega: "2026-10-15T10:00", estatus: "Orden recibida", incidencias: [] },
-    { id: 2, po: "PO-2026-0002", cliente: "Artesanías Raíces", producto: "Cajas de embalaje", cantidad: 60, entrega: "2026-10-18T12:00", estatus: "En fabricación", incidencias: [] },
-    { id: 3, po: "PO-2026-0003", cliente: "Abarrotes La Esperanza", producto: "Bolsas de papel kraft", cantidad: 2000, entrega: "2026-10-12T09:00", estatus: "Control de calidad", incidencias: [] },
-    { id: 4, po: "PO-2026-0004", cliente: "Verduras Hernández", producto: "Rejas plásticas", cantidad: 80, entrega: "2026-09-30T16:00", estatus: "Empaquetado", incidencias: [] },
-    { id: 5, po: "PO-2026-0005", cliente: "Cooperativa Sierra Verde", producto: "Etiquetas adhesivas", cantidad: 5000, entrega: "2026-09-20T11:00", estatus: "En tránsito", incidencias: [] },
-  ];
+const sesion = Bochito.requerirSesion();
 
-  // ---- Almacenamiento seguro (puede fallar en modo privado) ----
-  const leer = (almacen, clave) => {
-    try { return JSON.parse(almacen.getItem(clave)); } catch { return null; }
-  };
-  const guardar = (almacen, clave, valor) => {
-    try { almacen.setItem(clave, JSON.stringify(valor)); } catch { /* sin almacenamiento */ }
-  };
+if (sesion) {
+    Bochito.activarBarraSesion(sesion);
+}
 
-  // ---- Pedidos ----
-  function getPedidos() {
-    const guardados = leer(localStorage, CLAVE_PEDIDOS);
-    if (Array.isArray(guardados)) return guardados;
-    guardar(localStorage, CLAVE_PEDIDOS, PEDIDOS_INICIALES);
-    return structuredClone(PEDIDOS_INICIALES);
-  }
-  function savePedidos(lista) { guardar(localStorage, CLAVE_PEDIDOS, lista); }
+const ESTADOS = Bochito.ESTADOS;
 
-  function agregarPedido({ cliente, producto, cantidad, entrega }) {
-    const lista = getPedidos();
-    const id = lista.reduce((m, p) => Math.max(m, p.id), 0) + 1;
-    const pedido = {
-      id,
-      po: `PO-${new Date().getFullYear()}-${String(id).padStart(4, "0")}`,
-      cliente, producto, cantidad, entrega,
-      estatus: ESTADOS[0], // todo pedido nuevo inicia como "Orden recibida"
-      incidencias: [],
-    };
-    lista.push(pedido);
-    savePedidos(lista);
-    return pedido;
-  }
+// Elementos de la página
+const tabla = document.getElementById("tablaPedidos");
+const sinPedidos = document.getElementById("sinPedidos");
+const filtro = document.getElementById("filtroEstatus");
+const mensaje = document.getElementById("mensaje");
+const modalEl = document.getElementById("modalEstatus");
+const modal = new bootstrap.Modal(modalEl);
+const formEstatus = document.getElementById("formEstatus");
+const selectNuevo = document.getElementById("nuevoEstatus");
+const modalPedido = document.getElementById("modalPedido");
+const modalError = document.getElementById("modalError");
 
-  // ---- Sesión ----
-  const getSesion = () => leer(sessionStorage, CLAVE_SESION);
-  const iniciarSesion = (usuario) => guardar(sessionStorage, CLAVE_SESION, usuario);
-  const cerrarSesion = () => { try { sessionStorage.removeItem(CLAVE_SESION); } catch { /* nada */ } };
+const filtroPo = document.getElementById("filtroPo");
+const filtroDesde = document.getElementById("filtroDesde");
+const filtroHasta = document.getElementById("filtroHasta");
 
-  /** Si no hay sesión, manda a iniciosesion.html. Devuelve el usuario o null. */
-  function requerirSesion() {
-    const s = getSesion();
-    if (!s) { window.location.href = "/iniciar-sesion"; return null; }
-    return s;
-  }
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-  // ---- Utilidades de interfaz ----
-  const formatoFecha = (iso) => {
-    const d = new Date(iso);
-    return isNaN(d) ? "—" : d.toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" });
-  };
+let pedidos = [];
+let pedidoActual = null;
+let paginaActual = 1;
 
-  /** Crea <td> con texto plano (textContent evita inyectar HTML). */
-  function celda(texto) {
-    const td = document.createElement("td");
-    td.textContent = texto;
-    return td;
-  }
-  /** Crea <td> con la etiqueta de color del estatus. */
-  function celdaEstatus(estatus) {
-    const td = document.createElement("td");
-    const b = document.createElement("span");
-    b.className = `badge text-bg-${COLOR_ESTATUS[estatus] || "secondary"}`;
-    b.textContent = estatus;
-    td.appendChild(b);
-    return td;
-  }
+// Crear espacio para la paginación
+const paginacion = document.createElement("nav");
+paginacion.className = "mt-4";
+paginacion.setAttribute("aria-label", "Paginación de pedidos");
 
-  /** Botón "Cerrar sesión" y nombre del usuario en las páginas protegidas. */
-  function activarBarraSesion(sesion) {
-    // getElementById: ambos elementos tienen id único en las páginas protegidas.
-    const nombre = document.getElementById("usuarioActual");
-    if (nombre) nombre.textContent = sesion.correo;
-    const salir = document.getElementById("btnSalir");
+tabla.closest(".card").insertAdjacentElement("afterend", paginacion);
 
-    /** Evento click: cierra la sesión y vuelve al inicio de sesión. */
-    function alCerrarSesion() {
-      cerrarSesion();
-      window.location.href = "/iniciar-sesion";
+// Mostrar mensajes
+function mostrarMensaje(texto, tipo) {
+    mensaje.textContent = texto;
+    mensaje.className = `alert alert-${tipo}`;
+}
+
+// Llenar los selectores de estatus
+function llenarSelects() {
+    ESTADOS.forEach((estado) => {
+        filtro.add(new Option(estado, estado));
+        selectNuevo.add(new Option(estado, estado));
+    });
+}
+
+// Consultar pedidos en PostgreSQL
+async function cargarPedidos(pagina = 1) {
+    const desde = filtroDesde.value;
+    const hasta = filtroHasta.value;
+
+    const fechasMal = Boolean(desde && hasta && desde > hasta);
+
+    filtroHasta.classList.toggle("is-invalid", fechasMal);
+
+    if (fechasMal) {
+        tabla.innerHTML = "";
+        paginacion.innerHTML = "";
+        sinPedidos.classList.remove("d-none");
+        sinPedidos.textContent =
+            "La fecha final no puede ser anterior a la inicial.";
+        return;
     }
-    if (salir) salir.addEventListener("click", alCerrarSesion);
-  }
 
-  return { ESTADOS, getPedidos, savePedidos, agregarPedido, getSesion, iniciarSesion, cerrarSesion,
-           requerirSesion, formatoFecha, celda, celdaEstatus, activarBarraSesion };
-})();
+    const parametros = new URLSearchParams();
+
+    parametros.append("po", filtroPo.value.trim());
+    parametros.append("estatus", filtro.value);
+    parametros.append("desde", desde);
+    parametros.append("hasta", hasta);
+    parametros.append("page", pagina);
+
+    try {
+        const respuesta = await fetch(
+            `/productos/datos?${parametros.toString()}`,
+            {
+                headers: {
+                    Accept: "application/json",
+                },
+            },
+        );
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron consultar los pedidos.");
+        }
+
+        const datos = await respuesta.json();
+
+        pedidos = datos.data;
+        paginaActual = datos.current_page;
+
+        dibujarTabla();
+        dibujarPaginacion(datos);
+    } catch (error) {
+        console.error(error);
+        mostrarMensaje(error.message, "danger");
+    }
+}
+
+// Dibujar los pedidos en la tabla
+function dibujarTabla() {
+    tabla.innerHTML = "";
+
+    pedidos.forEach((pedido) => {
+        const fila = document.createElement("tr");
+
+        fila.append(
+            Bochito.celda(pedido.po),
+            Bochito.celda(pedido.cliente),
+            Bochito.celda(pedido.producto),
+            Bochito.celda(pedido.cantidad),
+            Bochito.celda(Bochito.formatoFecha(pedido.entrega)),
+            Bochito.celdaEstatus(pedido.estatus),
+        );
+
+        const acciones = document.createElement("td");
+        acciones.className = "text-end";
+
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "btn btn-outline-primary btn-sm";
+        boton.dataset.id = pedido.id;
+        boton.textContent = "Actualizar estatus";
+
+        acciones.appendChild(boton);
+        fila.appendChild(acciones);
+        tabla.appendChild(fila);
+    });
+
+    sinPedidos.classList.toggle("d-none", pedidos.length > 0);
+}
+
+// Dibujar controles de paginación
+function dibujarPaginacion(datos) {
+    paginacion.innerHTML = "";
+
+    if (datos.last_page <= 1) {
+        return;
+    }
+
+    const lista = document.createElement("ul");
+    lista.className = "pagination justify-content-center";
+
+    function agregarBoton(texto, pagina, deshabilitado, activo = false) {
+        const elemento = document.createElement("li");
+        elemento.className = `page-item ${deshabilitado ? "disabled" : ""} ${activo ? "active" : ""}`;
+
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "page-link";
+        boton.textContent = texto;
+        boton.disabled = deshabilitado;
+
+        boton.addEventListener("click", () => cargarPedidos(pagina));
+
+        elemento.appendChild(boton);
+        lista.appendChild(elemento);
+    }
+
+    agregarBoton("Anterior", datos.current_page - 1, !datos.prev_page_url);
+
+    for (let i = 1; i <= datos.last_page; i++) {
+        agregarBoton(i, i, false, i === datos.current_page);
+    }
+
+    agregarBoton("Siguiente", datos.current_page + 1, !datos.next_page_url);
+
+    paginacion.appendChild(lista);
+
+    const resumen = document.createElement("p");
+    resumen.className = "text-center text-muted small";
+    resumen.textContent = `Mostrando ${datos.from ?? 0} a ${datos.to ?? 0} de ${datos.total} pedidos`;
+
+    paginacion.appendChild(resumen);
+}
+
+// Abrir modal para actualizar estatus
+function alClicTabla(e) {
+    const boton = e.target.closest("button[data-id]");
+
+    if (!boton) return;
+
+    pedidoActual = pedidos.find(
+        (pedido) => pedido.id === Number(boton.dataset.id),
+    );
+
+    if (!pedidoActual) return;
+
+    modalPedido.textContent = `${pedidoActual.po} · ${pedidoActual.producto} (actual: ${pedidoActual.estatus})`;
+
+    selectNuevo.value = pedidoActual.estatus;
+    modalError.classList.add("d-none");
+
+    modal.show();
+}
+
+// Guardar el nuevo estatus en PostgreSQL
+async function actualizarEstatusAPI(id, estatus) {
+    if (!csrfToken) {
+        throw new Error("No se encontró el token de seguridad CSRF.");
+    }
+
+    const respuesta = await fetch(`/pedidos/${id}/estatus`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-CSRF-TOKEN": csrfToken,
+        },
+        body: JSON.stringify({ estatus }),
+    });
+
+    const body = await respuesta.json();
+
+    return {
+        status: respuesta.status,
+        body,
+    };
+}
+
+// Evento para guardar el estatus
+async function alEnviarEstatus(e) {
+    e.preventDefault();
+
+    const nuevo = selectNuevo.value;
+
+    if (!ESTADOS.includes(nuevo)) {
+        modalError.textContent = "Selecciona un estatus válido.";
+        modalError.classList.remove("d-none");
+        return;
+    }
+
+    try {
+        const { status, body } = await actualizarEstatusAPI(
+            pedidoActual.id,
+            nuevo,
+        );
+
+        if (status === 200 && body.exito) {
+            modal.hide();
+
+            await cargarPedidos(paginaActual);
+
+            mostrarMensaje(body.mensaje, "success");
+        } else {
+            modalError.textContent =
+                body.message ||
+                body.mensaje ||
+                "No se pudo actualizar el estatus.";
+
+            modalError.classList.remove("d-none");
+        }
+    } catch (error) {
+        modalError.textContent = error.message;
+        modalError.classList.remove("d-none");
+    }
+}
+
+// Eventos de filtros
+function aplicarFiltros() {
+    cargarPedidos(1);
+}
+
+tabla.addEventListener("click", alClicTabla);
+formEstatus.addEventListener("submit", alEnviarEstatus);
+
+filtroPo.addEventListener("input", aplicarFiltros);
+filtro.addEventListener("change", aplicarFiltros);
+filtroDesde.addEventListener("change", aplicarFiltros);
+filtroHasta.addEventListener("change", aplicarFiltros);
+
+// Iniciar pantalla
+llenarSelects();
+
+if (sesion) {
+    cargarPedidos();
+}
