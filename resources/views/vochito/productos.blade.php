@@ -1,187 +1,356 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos - Bochito Envíos y Ventas</title>
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Iconos Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <link rel="stylesheet" href="css/estilos.css" />
-    
-    <link rel="stylesheet" href="css/utilidades.css">
-    <link rel="stylesheet" href="css/tema.css">
-    <script src="js/tema.js"></script>
-  </head>
-  <body class="d-flex flex-column min-vh-100">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
+    <!-- Estilos del proyecto -->
+    <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/utilidades.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tema.css') }}">
+
+    <!-- Tema -->
+    <script src="{{ asset('js/tema.js') }}"></script>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-custom-dark sticky-top">
-      <div class="container">
-        <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{{ route('vochito.inicio') }}">
-          <img src="img/logo.png" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top" />
-          <div class="d-flex flex-column lh-sm">
-            <span><i class="fa-solid fa-leaf"></i> Bochito</span>
-            <small>Comercio local</small>
-          </div>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar menú">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto align-items-lg-center">
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.inicio') }}"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.nosotros') }}"><i class="fa-solid fa-users"></i> Nosotros</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.servicios') }}"><i class="fa-solid fa-store"></i> Servicios</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.catalogo') }}"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{{ route('vochito.pedidos') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
-                <li><a class="dropdown-item active" aria-current="page" href="{{ route('vochito.productos') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.historial') }}"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.notificaciones') }}"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.incidencias') }}"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.evidencias') }}"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.cancelacion') }}"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.modificacion') }}"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
-              </ul>
-            </li>
-            <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
-            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
-          </ul>
+        <div class="container">
+
+            <a class="navbar-brand text-white d-flex align-items-center gap-2" href="{{ route('vochito.inicio') }}">
+                <img src="{{ asset('img/logo.png') }}" alt="Logo Bochito Envíos y Ventas" width="60" height="60" class="rounded-circle d-inline-block align-text-top">
+
+                <div class="d-flex flex-column lh-sm">
+                    <span><i class="fa-solid fa-leaf"></i> Bochito</span>
+                    <small>Comercio local</small>
+                </div>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.inicio') }}">
+                            <i class="fa-solid fa-house"></i> Inicio
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.nosotros') }}">
+                            <i class="fa-solid fa-users"></i> Nosotros
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.servicios') }}">
+                            <i class="fa-solid fa-store"></i> Servicios
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.catalogo') }}">
+                            <i class="fa-solid fa-basket-shopping"></i> Catálogo
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.busquedas') }}">
+                            <i class="fa-solid fa-magnifying-glass"></i> Búsquedas
+                        </a>
+                    </li>
+
+                    <!-- MENÚ PEDIDOS -->
+                    <li class="nav-item dropdown">
+
+                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-clipboard-list"></i> Pedidos
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.pedidos') }}">
+                                    <i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item active" aria-current="page" href="{{ route('vochito.productos') }}">
+                                    <i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.historial') }}">
+                                    <i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial
+                                </a>
+                            </li>
+
+                            <!-- TIEMPO DE RESPUESTA -->
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.tiempo_respuesta') }}">
+                                    <i class="fa-solid fa-stopwatch fa-fw"></i> Tiempo de respuesta
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.notificaciones') }}">
+                                    <i class="fa-solid fa-bell fa-fw"></i> Notificaciones
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.incidencias') }}">
+                                    <i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.evidencias') }}">
+                                    <i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.cancelacion') }}">
+                                    <i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.modificacion') }}">
+                                    <i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}">
+                                    <i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño
+                                </a>
+                            </li>
+
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('vochito.contacto') }}">
+                            <i class="fa-solid fa-envelope"></i> Contacto
+                        </a>
+                    </li>
+
+                    <li class="nav-item ms-lg-2">
+                        <a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}">
+                            <i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
         </div>
-      </div>
     </nav>
 
-
+    <!-- ENCABEZADO -->
     <header class="bg-primary text-white text-center py-5">
-      <div class="container py-3">
-        <h1 class="display-4 fw-bold">Productos</h1>
-        <p class="lead">
-          Busca pedidos por orden de compra, fechas o estatus y actualiza
-          su etapa del proceso.
-        </p>
-      </div>
+        <div class="container py-3">
+            <h1 class="display-4 fw-bold">Productos</h1>
+
+            <p class="lead">
+                Busca pedidos por orden de compra, fechas o estatus y actualiza
+                su etapa del proceso.
+            </p>
+        </div>
     </header>
 
+    <!-- CONTENIDO PRINCIPAL -->
     <main class="container my-5">
-      <div class="d-flex justify-content-end align-items-center gap-3 mb-3">
-        <span class="text-muted small"><i class="fa-solid fa-user"></i> <span id="usuarioActual"></span></span>
-        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnSalir"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
-      </div>
-      <div id="mensaje" class="alert d-none" role="alert"></div>
 
-      <!-- RF04: buscar y filtrar por PO, rango de fechas o estatus -->
-      <div class="row g-3 mb-4" id="filtros" role="search">
-        <div class="col-md-6 col-lg-3">
-          <label for="filtroPo" class="form-label fw-bold">Orden de compra (PO)</label>
-          <input type="search" id="filtroPo" class="form-control" placeholder="PO-2026-0001" />
-        </div>
-        <div class="col-md-6 col-lg-3">
-          <label for="filtroEstatus" class="form-label fw-bold">Estatus</label>
-          <select id="filtroEstatus" class="form-select">
-            <option value="">Todos</option>
-          </select>
-        </div>
-        <div class="col-md-6 col-lg-3">
-          <label for="filtroDesde" class="form-label fw-bold">Entrega desde</label>
-          <input type="date" id="filtroDesde" class="form-control" />
-        </div>
-        <div class="col-md-6 col-lg-3">
-          <label for="filtroHasta" class="form-label fw-bold">Entrega hasta</label>
-          <input type="date" id="filtroHasta" class="form-control" />
-          <div class="invalid-feedback">"Hasta" no puede ser anterior a "Desde".</div>
-        </div>
-      </div>
+        <div class="d-flex justify-content-end align-items-center gap-3 mb-3">
 
-      <div class="card shadow-sm border-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>PO</th>
-                <th>Cliente</th>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Entrega estimada</th>
-                <th>Estatus</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="tablaPedidos"></tbody>
-          </table>
+            <span class="text-muted small">
+                <i class="fa-solid fa-user"></i>
+                <span id="usuarioActual"></span>
+            </span>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnSalir">
+                <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+            </button>
+
         </div>
-      </div>
-      <p id="sinPedidos" class="text-center text-muted mt-4 d-none">
-        No hay pedidos con esos filtros.
-      </p>
+
+        <div id="mensaje" class="alert d-none" role="alert"></div>
+
+        <!-- FILTROS DE BÚSQUEDA -->
+        <div class="row g-3 mb-4" id="filtros" role="search">
+
+            <div class="col-md-6 col-lg-3">
+                <label for="filtroPo" class="form-label fw-bold">
+                    Orden de compra (PO)
+                </label>
+
+                <input type="search" id="filtroPo" class="form-control" placeholder="PO-2026-0001">
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <label for="filtroEstatus" class="form-label fw-bold">
+                    Estatus
+                </label>
+
+                <select id="filtroEstatus" class="form-select">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <label for="filtroDesde" class="form-label fw-bold">
+                    Entrega desde
+                </label>
+
+                <input type="date" id="filtroDesde" class="form-control">
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <label for="filtroHasta" class="form-label fw-bold">
+                    Entrega hasta
+                </label>
+
+                <input type="date" id="filtroHasta" class="form-control">
+
+                <div class="invalid-feedback">
+                    "Hasta" no puede ser anterior a "Desde".
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TABLA DE PEDIDOS -->
+        <div class="card shadow-sm border-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>PO</th>
+                            <th>Cliente</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Entrega estimada</th>
+                            <th>Estatus</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaPedidos"></tbody>
+
+                </table>
+
+            </div>
+        </div>
+
+        <p id="sinPedidos" class="text-center text-muted mt-4 d-none">
+            No hay pedidos con esos filtros.
+        </p>
+
     </main>
 
+    <!-- MODAL PARA ACTUALIZAR ESTATUS -->
     <div class="modal fade" id="modalEstatus" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="formEstatus" novalidate>
-            <div class="modal-header">
-              <h5 class="modal-title">Actualizar estatus</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Cerrar"
-              ></button>
+
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <form id="formEstatus" novalidate>
+
+                    <div class="modal-header">
+
+                        <h5 class="modal-title">Actualizar estatus</h5>
+
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+                    </div>
+
+                    <div class="modal-body">
+
+                        <p class="text-muted" id="modalPedido"></p>
+
+                        <label for="nuevoEstatus" class="form-label fw-bold">
+                            Nuevo estatus <span class="text-danger">*</span>
+                        </label>
+
+                        <select id="nuevoEstatus" class="form-select" required>
+                            <option value="">Selecciona un estatus</option>
+                        </select>
+
+                        <div id="modalError" class="alert alert-danger mt-3 mb-0 d-none"></div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button type="submit" class="btn btn-primary">
+                            Guardar
+                        </button>
+
+                    </div>
+
+                </form>
+
             </div>
-            <div class="modal-body">
-              <p class="text-muted" id="modalPedido"></p>
-              <label for="nuevoEstatus" class="form-label fw-bold">
-                Nuevo estatus <span class="text-danger">*</span>
-              </label>
-              <select id="nuevoEstatus" class="form-select" required>
-                <option value="">Selecciona un estatus</option>
-              </select>
-              <div id="modalError" class="alert alert-danger mt-3 mb-0 d-none"></div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Cancelar
-              </button>
-              <button type="submit" class="btn btn-primary">Guardar</button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
 
+    <!-- PIE DE PÁGINA -->
     <footer class="bg-custom-dark text-white text-center py-3 mt-auto">
-      <div class="container">
-        <p class="small mb-2">
-          <a class="link-light" href="{{ route('vochito.ayuda') }}">Ayuda</a> ·
-          <a class="link-light" href="{{ route('vochito.privacidad') }}">Privacidad</a> ·
-          <a class="link-light" href="{{ route('vochito.rnf') }}">Requerimientos no funcionales</a>
-        </p>
-        <p class="mb-0 small">&copy; 2026 Bochito - Envíos y Ventas. Todos los derechos reservados.</p>
-      </div>
-    </footer>}
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/datos.js"></script>
-    <script src="js/productos.js"></script>
 
-  </body>
+        <div class="container">
+
+            <p class="small mb-2">
+                <a class="link-light" href="{{ route('vochito.ayuda') }}">Ayuda</a> ·
+
+                <a class="link-light" href="{{ route('vochito.privacidad') }}">Privacidad</a> ·
+
+                <a class="link-light" href="{{ route('vochito.rnf') }}">
+                    Requerimientos no funcionales
+                </a>
+            </p>
+
+            <p class="mb-0 small">
+                &copy; 2026 Bochito - Envíos y Ventas. Todos los derechos reservados.
+            </p>
+
+        </div>
+
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{{ asset('js/datos.js') }}"></script>
+    <script src="{{ asset('js/productos.js') }}"></script>
+
+</body>
 </html>
