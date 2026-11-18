@@ -2,13 +2,21 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AuthController;
 
-// Página principal
+// ==========================================
+// PÁGINA PRINCIPAL
+// ==========================================
+
 Route::get('/', function () {
     return view('vochito.inicio');
 })->name('vochito.inicio');
 
-// Páginas de Vochito
+// ==========================================
+// PÁGINAS DE VOCHITO
+// ==========================================
+
 Route::view('/nosotros', 'vochito.nosotros')->name('vochito.nosotros');
 Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
 Route::view('/catalogo', 'vochito.catalogo')->name('vochito.catalogo');
@@ -33,3 +41,50 @@ Route::view('/rnf06', 'vochito.RNF06')->name('vochito.rnf06');
 Route::view('/tiempo-respuesta', 'vochito.tiempo_respuesta')->name('vochito.tiempo_respuesta');
 Route::view('/iniciar-sesion', 'vochito.iniciosesion')->name('vochito.iniciosesion');
 Route::view('/indice', 'vochito.index')->name('vochito.index');
+
+// ==========================================
+// REGISTRO DE USUARIOS
+// ==========================================
+
+// Mostrar formulario de registro
+Route::get('/registro', function () {
+    return view('vochito.registro');
+})->name('registro');
+
+// Guardar nuevo usuario
+Route::post('/registro', [AuthController::class, 'register'])
+    ->name('registro.store');
+
+// ==========================================
+// AUTENTICACIÓN
+// ==========================================
+
+// Iniciar sesión
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login');
+
+// Cerrar sesión
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
+
+// ==========================================
+// ADMINISTRACIÓN DE USUARIOS
+// SOLO ADMINISTRADORES
+// ==========================================
+
+Route::middleware(['auth', 'admin'])->group(function () {
+
+    Route::get('/usuarios', [UserController::class, 'index'])
+        ->name('usuarios.index');
+
+    Route::get('/usuarios/{id}/editar', [UserController::class, 'edit'])
+        ->name('usuarios.edit');
+
+    Route::put('/usuarios/{id}', [UserController::class, 'update'])
+        ->name('usuarios.update');
+
+    Route::delete('/usuarios/{id}', [UserController::class, 'destroy'])
+        ->name('usuarios.destroy');
+
+});
