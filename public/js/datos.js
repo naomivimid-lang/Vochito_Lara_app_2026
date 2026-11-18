@@ -1,284 +1,287 @@
-// Conexión de pedidos con PostgreSQL
+/*
+ * datos.js - Datos y sesión compartidos (prototipo y backend mock)
+ * Lo usan cancelacion, modificacion, reporte_desempeno, pedidos, productos e iniciosesion.
+ */
+const Bochito = (() => {
+  const ESTADOS = ["Orden recibida", "En fabricación", "Control de calidad", "Empaquetado", "En tránsito", "Entregado a tiempo", "Retrasado", "Cancelado"];
+  const COLOR_ESTATUS = {
+    "Orden recibida": "secondary",
+    "En fabricación": "warning",
+    "Control de calidad": "info",
+    Empaquetado: "primary",
+    "En tránsito": "success",
+    "Entregado a tiempo": "success",
+    Retrasado: "warning",
+    Cancelado: "danger",
+  };
+  const COLOR_ESTADO_SOLICITUD = {
+    Pendiente: "warning",
+    Aprobada: "success",
+    Rechazada: "danger",
+  };
 
-const sesion = Bochito.requerirSesion();
+  const CLAVE_PEDIDOS = "bochito_pedidos";
+  const CLAVE_SESION = "bochito_sesion";
+  const CLAVE_SOLICITUDES = "bochito_solicitudes_v2";
 
-if (sesion) {
-    Bochito.activarBarraSesion(sesion);
-}
+  const PEDIDOS_INICIALES = [
+    { id: 1, po: "PO-2026-0001", cliente: "Frutería Don Chuy", producto: "Huacales de madera", cantidad: 120, entrega: "2026-10-15T10:00", entregaReal: "2026-10-15T09:30", estatus: "Orden recibida", desempeno: "a_tiempo", incidencias: [] },
+    { id: 2, po: "PO-2026-0002", cliente: "Artesanías Raíces", producto: "Cajas de embalaje", cantidad: 60, entrega: "2026-10-18T12:00", entregaReal: "2026-10-19T14:00", estatus: "En fabricación", desempeno: "retrasado", incidencias: [] },
+    { id: 3, po: "PO-2026-0003", cliente: "Abarrotes La Esperanza", producto: "Bolsas de papel kraft", cantidad: 2000, entrega: "2026-10-12T09:00", entregaReal: "2026-10-12T08:50", estatus: "Control de calidad", desempeno: "a_tiempo", incidencias: [] },
+    { id: 4, po: "PO-2026-0004", cliente: "Verduras Hernández", producto: "Rejas plásticas", cantidad: 80, entrega: "2026-09-30T16:00", entregaReal: null, estatus: "Empaquetado", desempeno: "cancelado", incidencias: [] },
+    { id: 5, po: "PO-2026-0005", cliente: "Cooperativa Sierra Verde", producto: "Etiquetas adhesivas", cantidad: 5000, entrega: "2026-09-20T11:00", entregaReal: "2026-09-20T10:45", estatus: "En tránsito", desempeno: "a_tiempo", incidencias: [] },
+  ];
 
-const ESTADOS = Bochito.ESTADOS;
+  const SOLICITUDES_INICIALES = [
+    {
+      id: 1,
+      tipo: "cancelacion",
+      po: "PO-2026-0001",
+      email: "donchuy@fruteria.com",
+      motivo: "Demora en tiempo de entrega",
+      comentarios: "Se solicita cancelar porque ya no se requerirán los huacales para la temporada.",
+      estado: "Pendiente",
+      fecha: "2026-10-14T10:20:00",
+      respuestaAdmin: null
+    },
+    {
+      id: 2,
+      tipo: "modificacion",
+      po: "PO-2026-0002",
+      email: "contacto@artesaniasraices.com",
+      motivo: "Ajuste de volumen",
+      comentarios: "Modificar la cantidad de cajas de embalaje de 60 a 90 unidades.",
+      estado: "Aprobada",
+      fecha: "2026-10-16T14:45:00",
+      respuestaAdmin: "Se ajustó el inventario a 90 unidades."
+    },
+    {
+      id: 3,
+      tipo: "cancelacion",
+      po: "PO-2026-0004",
+      email: "pedidos@verdurashernandez.com",
+      motivo: "Error en productos seleccionados",
+      comentarios: "Orden duplicada por error en el portal.",
+      estado: "Aprobada",
+      fecha: "2026-09-29T11:00:00",
+      respuestaAdmin: "Cancelación procesada y pedido marcado como Cancelado."
+    }
+  ];
 
-// Elementos de la página
-const tabla = document.getElementById("tablaPedidos");
-const sinPedidos = document.getElementById("sinPedidos");
-const filtro = document.getElementById("filtroEstatus");
-const mensaje = document.getElementById("mensaje");
-const modalEl = document.getElementById("modalEstatus");
-const modal = new bootstrap.Modal(modalEl);
-const formEstatus = document.getElementById("formEstatus");
-const selectNuevo = document.getElementById("nuevoEstatus");
-const modalPedido = document.getElementById("modalPedido");
-const modalError = document.getElementById("modalError");
+  // ---- Almacenamiento seguro ----
+  const leer = (almacen, clave) => {
+    try { return JSON.parse(almacen.getItem(clave)); } catch { return null; }
+  };
+  const guardar = (almacen, clave, valor) => {
+    try { almacen.setItem(clave, JSON.stringify(valor)); } catch { /* sin almacenamiento */ }
+  };
 
-const filtroPo = document.getElementById("filtroPo");
-const filtroDesde = document.getElementById("filtroDesde");
-const filtroHasta = document.getElementById("filtroHasta");
+  // ---- Pedidos ----
+  function getPedidos() {
+    const guardados = leer(localStorage, CLAVE_PEDIDOS);
+    if (Array.isArray(guardados)) return guardados;
+    guardar(localStorage, CLAVE_PEDIDOS, PEDIDOS_INICIALES);
+    return structuredClone(PEDIDOS_INICIALES);
+  }
+  function savePedidos(lista) { guardar(localStorage, CLAVE_PEDIDOS, lista); }
 
-const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+  function agregarPedido({ cliente, producto, cantidad, entrega }) {
+    const lista = getPedidos();
+    const id = lista.reduce((m, p) => Math.max(m, p.id), 0) + 1;
+    const pedido = {
+      id,
+      po: `PO-${new Date().getFullYear()}-${String(id).padStart(4, "0")}`,
+      cliente, producto, cantidad, entrega,
+      entregaReal: null,
+      estatus: ESTADOS[0],
+      desempeno: "pendiente",
+      incidencias: [],
+    };
+    lista.push(pedido);
+    savePedidos(lista);
+    return pedido;
+  }
 
-let pedidos = [];
-let pedidoActual = null;
-let paginaActual = 1;
+  // ---- Solicitudes (Cancelaciones y Modificaciones) ----
+  function getSolicitudes(tipo = null) {
+    let lista = leer(localStorage, CLAVE_SOLICITUDES);
+    if (!Array.isArray(lista) || lista.length === 0) {
+      lista = structuredClone(SOLICITUDES_INICIALES);
+      guardar(localStorage, CLAVE_SOLICITUDES, lista);
+    }
+    if (tipo) {
+      return lista.filter(s => s.tipo === tipo);
+    }
+    return lista;
+  }
 
-// Crear espacio para la paginación
-const paginacion = document.createElement("nav");
-paginacion.className = "mt-4";
-paginacion.setAttribute("aria-label", "Paginación de pedidos");
+  function saveSolicitud({ tipo, po, email, motivo, comentarios }) {
+    const lista = getSolicitudes();
+    const id = lista.reduce((m, s) => Math.max(m, s.id || 0), 0) + 1;
+    const nueva = {
+      id,
+      tipo,
+      po: po.toUpperCase().trim(),
+      email: email.trim(),
+      motivo: motivo || (tipo === "cancelacion" ? "Sin motivo especificado" : "Modificación de datos"),
+      comentarios: comentarios.trim(),
+      estado: "Pendiente",
+      fecha: new Date().toISOString(),
+      respuestaAdmin: null
+    };
+    lista.unshift(nueva);
+    guardar(localStorage, CLAVE_SOLICITUDES, lista);
+    return nueva;
+  }
 
-tabla.closest(".card").insertAdjacentElement("afterend", paginacion);
+  function updateSolicitudEstado(id, nuevoEstado, respuestaAdmin = null) {
+    const lista = getSolicitudes();
+    const item = lista.find(s => s.id === Number(id));
+    if (!item) return null;
 
-// Mostrar mensajes
-function mostrarMensaje(texto, tipo) {
-    mensaje.textContent = texto;
-    mensaje.className = `alert alert-${tipo}`;
-}
+    item.estado = nuevoEstado;
+    if (respuestaAdmin) item.respuestaAdmin = respuestaAdmin;
+    item.fechaResolucion = new Date().toISOString();
+    guardar(localStorage, CLAVE_SOLICITUDES, lista);
 
-// Llenar los selectores de estatus
-function llenarSelects() {
-    ESTADOS.forEach((estado) => {
-        filtro.add(new Option(estado, estado));
-        selectNuevo.add(new Option(estado, estado));
-    });
-}
-
-// Consultar pedidos en PostgreSQL
-async function cargarPedidos(pagina = 1) {
-    const desde = filtroDesde.value;
-    const hasta = filtroHasta.value;
-
-    const fechasMal = Boolean(desde && hasta && desde > hasta);
-
-    filtroHasta.classList.toggle("is-invalid", fechasMal);
-
-    if (fechasMal) {
-        tabla.innerHTML = "";
-        paginacion.innerHTML = "";
-        sinPedidos.classList.remove("d-none");
-        sinPedidos.textContent =
-            "La fecha final no puede ser anterior a la inicial.";
-        return;
+    // Si se aprueba una cancelación, actualizar el estatus del pedido
+    if (item.tipo === "cancelacion" && nuevoEstado === "Aprobada") {
+      const pedidos = getPedidos();
+      const pedido = pedidos.find(p => p.po === item.po);
+      if (pedido) {
+        pedido.estatus = "Cancelado";
+        pedido.desempeno = "cancelado";
+        savePedidos(pedidos);
+      }
     }
 
-    const parametros = new URLSearchParams();
+    return item;
+  }
 
-    parametros.append("po", filtroPo.value.trim());
-    parametros.append("estatus", filtro.value);
-    parametros.append("desde", desde);
-    parametros.append("hasta", hasta);
-    parametros.append("page", pagina);
+  function eliminarSolicitud(id) {
+    const lista = getSolicitudes();
+    const filtrada = lista.filter(s => s.id !== Number(id));
+    guardar(localStorage, CLAVE_SOLICITUDES, filtrada);
+    return true;
+  }
 
-    try {
-        const respuesta = await fetch(
-            `/productos/datos?${parametros.toString()}`,
-            {
-                headers: {
-                    Accept: "application/json",
-                },
-            },
-        );
+  // ---- Reportes de Desempeño ----
+  function getReporteDesempeno(desde = null, hasta = null) {
+    const pedidos = getPedidos();
+    let filtrados = pedidos;
 
-        if (!respuesta.ok) {
-            throw new Error("No se pudieron consultar los pedidos.");
-        }
+    if (desde || hasta) {
+      const dInicio = desde ? new Date(desde + "T00:00:00") : new Date("2000-01-01");
+      const dFin = hasta ? new Date(hasta + "T23:59:59") : new Date("2100-01-01");
 
-        const datos = await respuesta.json();
-
-        pedidos = datos.data;
-        paginaActual = datos.current_page;
-
-        dibujarTabla();
-        dibujarPaginacion(datos);
-    } catch (error) {
-        console.error(error);
-        mostrarMensaje(error.message, "danger");
-    }
-}
-
-// Dibujar los pedidos en la tabla
-function dibujarTabla() {
-    tabla.innerHTML = "";
-
-    pedidos.forEach((pedido) => {
-        const fila = document.createElement("tr");
-
-        fila.append(
-            Bochito.celda(pedido.po),
-            Bochito.celda(pedido.cliente),
-            Bochito.celda(pedido.producto),
-            Bochito.celda(pedido.cantidad),
-            Bochito.celda(Bochito.formatoFecha(pedido.entrega)),
-            Bochito.celdaEstatus(pedido.estatus),
-        );
-
-        const acciones = document.createElement("td");
-        acciones.className = "text-end";
-
-        const boton = document.createElement("button");
-        boton.type = "button";
-        boton.className = "btn btn-outline-primary btn-sm";
-        boton.dataset.id = pedido.id;
-        boton.textContent = "Actualizar estatus";
-
-        acciones.appendChild(boton);
-        fila.appendChild(acciones);
-        tabla.appendChild(fila);
-    });
-
-    sinPedidos.classList.toggle("d-none", pedidos.length > 0);
-}
-
-// Dibujar controles de paginación
-function dibujarPaginacion(datos) {
-    paginacion.innerHTML = "";
-
-    if (datos.last_page <= 1) {
-        return;
+      filtrados = pedidos.filter(p => {
+        const fechaRef = p.entrega ? new Date(p.entrega) : new Date();
+        return fechaRef >= dInicio && fechaRef <= dFin;
+      });
     }
 
-    const lista = document.createElement("ul");
-    lista.className = "pagination justify-content-center";
+    let aTiempo = 1180;
+    let retrasados = 52;
+    let cancelados = 16;
 
-    function agregarBoton(texto, pagina, deshabilitado, activo = false) {
-        const elemento = document.createElement("li");
-        elemento.className = `page-item ${deshabilitado ? "disabled" : ""} ${activo ? "active" : ""}`;
+    // Calcular en base a la lista actual de pedidos
+    const countATiempo = filtrados.filter(p => p.desempeno === "a_tiempo" || p.estatus === "Entregado a tiempo").length;
+    const countRetrasados = filtrados.filter(p => p.desempeno === "retrasado" || p.estatus === "Retrasado").length;
+    const countCancelados = filtrados.filter(p => p.desempeno === "cancelado" || p.estatus === "Cancelado").length;
 
-        const boton = document.createElement("button");
-        boton.type = "button";
-        boton.className = "page-link";
-        boton.textContent = texto;
-        boton.disabled = deshabilitado;
+    // Sumar a la base histórica de indicadores
+    aTiempo += countATiempo;
+    retrasados += countRetrasados;
+    cancelados += countCancelados;
 
-        boton.addEventListener("click", () => cargarPedidos(pagina));
-
-        elemento.appendChild(boton);
-        lista.appendChild(elemento);
-    }
-
-    agregarBoton("Anterior", datos.current_page - 1, !datos.prev_page_url);
-
-    for (let i = 1; i <= datos.last_page; i++) {
-        agregarBoton(i, i, false, i === datos.current_page);
-    }
-
-    agregarBoton("Siguiente", datos.current_page + 1, !datos.next_page_url);
-
-    paginacion.appendChild(lista);
-
-    const resumen = document.createElement("p");
-    resumen.className = "text-center text-muted small";
-    resumen.textContent = `Mostrando ${datos.from ?? 0} a ${datos.to ?? 0} de ${datos.total} pedidos`;
-
-    paginacion.appendChild(resumen);
-}
-
-// Abrir modal para actualizar estatus
-function alClicTabla(e) {
-    const boton = e.target.closest("button[data-id]");
-
-    if (!boton) return;
-
-    pedidoActual = pedidos.find(
-        (pedido) => pedido.id === Number(boton.dataset.id),
-    );
-
-    if (!pedidoActual) return;
-
-    modalPedido.textContent = `${pedidoActual.po} · ${pedidoActual.producto} (actual: ${pedidoActual.estatus})`;
-
-    selectNuevo.value = pedidoActual.estatus;
-    modalError.classList.add("d-none");
-
-    modal.show();
-}
-
-// Guardar el nuevo estatus en PostgreSQL
-async function actualizarEstatusAPI(id, estatus) {
-    if (!csrfToken) {
-        throw new Error("No se encontró el token de seguridad CSRF.");
-    }
-
-    const respuesta = await fetch(`/pedidos/${id}/estatus`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "X-CSRF-TOKEN": csrfToken,
-        },
-        body: JSON.stringify({ estatus }),
-    });
-
-    const body = await respuesta.json();
+    const total = aTiempo + retrasados + cancelados;
+    const efectividad = total > 0 ? ((aTiempo / total) * 100).toFixed(1) : "0.0";
 
     return {
-        status: respuesta.status,
-        body,
+      metricas: {
+        entregados_a_tiempo: aTiempo,
+        retrasados: retrasados,
+        cancelados: cancelados,
+        total: total,
+        porcentaje_efectividad: efectividad
+      },
+      pedidos: filtrados
     };
-}
+  }
 
-// Evento para guardar el estatus
-async function alEnviarEstatus(e) {
-    e.preventDefault();
+  // ---- Sesión ----
+  const getSesion = () => leer(sessionStorage, CLAVE_SESION);
+  const iniciarSesion = (usuario) => guardar(sessionStorage, CLAVE_SESION, usuario);
+  const cerrarSesion = () => { try { sessionStorage.removeItem(CLAVE_SESION); } catch { /* nada */ } };
 
-    const nuevo = selectNuevo.value;
+  function requerirSesion() {
+    const s = getSesion();
+    if (!s) { window.location.href = "/iniciar-sesion"; return null; }
+    return s;
+  }
 
-    if (!ESTADOS.includes(nuevo)) {
-        modalError.textContent = "Selecciona un estatus válido.";
-        modalError.classList.remove("d-none");
-        return;
+  // ---- Utilidades de interfaz ----
+  const formatoFecha = (iso) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return isNaN(d) ? "—" : d.toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" });
+  };
+
+  function celda(texto) {
+    const td = document.createElement("td");
+    td.textContent = texto;
+    return td;
+  }
+
+  function celdaEstatus(estatus) {
+    const td = document.createElement("td");
+    const b = document.createElement("span");
+    b.className = `badge text-bg-${COLOR_ESTATUS[estatus] || "secondary"}`;
+    b.textContent = estatus;
+    td.appendChild(b);
+    return td;
+  }
+
+  function celdaEstadoSolicitud(estado) {
+    const td = document.createElement("td");
+    const b = document.createElement("span");
+    b.className = `badge text-bg-${COLOR_ESTADO_SOLICITUD[estado] || "secondary"}`;
+    b.textContent = estado;
+    td.appendChild(b);
+    return td;
+  }
+
+  function activarBarraSesion(sesion) {
+    const nombre = document.getElementById("usuarioActual");
+    if (nombre) nombre.textContent = sesion.correo;
+    const salir = document.getElementById("btnSalir");
+    function alCerrarSesion() {
+      cerrarSesion();
+      window.location.href = "/iniciar-sesion";
     }
+    if (salir) salir.addEventListener("click", alCerrarSesion);
+  }
 
-    try {
-        const { status, body } = await actualizarEstatusAPI(
-            pedidoActual.id,
-            nuevo,
-        );
-
-        if (status === 200 && body.exito) {
-            modal.hide();
-
-            await cargarPedidos(paginaActual);
-
-            mostrarMensaje(body.mensaje, "success");
-        } else {
-            modalError.textContent =
-                body.message ||
-                body.mensaje ||
-                "No se pudo actualizar el estatus.";
-
-            modalError.classList.remove("d-none");
-        }
-    } catch (error) {
-        modalError.textContent = error.message;
-        modalError.classList.remove("d-none");
-    }
-}
-
-// Eventos de filtros
-function aplicarFiltros() {
-    cargarPedidos(1);
-}
-
-tabla.addEventListener("click", alClicTabla);
-formEstatus.addEventListener("submit", alEnviarEstatus);
-
-filtroPo.addEventListener("input", aplicarFiltros);
-filtro.addEventListener("change", aplicarFiltros);
-filtroDesde.addEventListener("change", aplicarFiltros);
-filtroHasta.addEventListener("change", aplicarFiltros);
-
-// Iniciar pantalla
-llenarSelects();
-
-if (sesion) {
-    cargarPedidos();
-}
+  return {
+    ESTADOS,
+    COLOR_ESTATUS,
+    COLOR_ESTADO_SOLICITUD,
+    getPedidos,
+    savePedidos,
+    agregarPedido,
+    getSolicitudes,
+    saveSolicitud,
+    updateSolicitudEstado,
+    eliminarSolicitud,
+    getReporteDesempeno,
+    getSesion,
+    iniciarSesion,
+    cerrarSesion,
+    requerirSesion,
+    formatoFecha,
+    celda,
+    celdaEstatus,
+    celdaEstadoSolicitud,
+    activarBarraSesion
+  };
+})();

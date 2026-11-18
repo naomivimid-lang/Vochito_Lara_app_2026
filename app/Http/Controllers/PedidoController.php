@@ -2,72 +2,77 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ActualizarEstatusRequest;
+use App\Http\Requests\StorePedidoRequest;
+use App\Http\Requests\UpdatePedidoRequest;
 use App\Models\Pedido;
+use App\Models\Producto;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class PedidoController extends Controller
 {
-    // Obtener los pedidos guardados en PostgreSQL
-    public function index()
+    public function index(Request $request)
     {
-        $pedidos = Pedido::orderByDesc('created_at')->get();
+        $pedidos = Pedido::with('producto')
+            ->when($request->buscar, fn ($q, $b) => $q->where('cliente', 'ilike', "%{$b}%"))
+            ->when($request->estatus, fn ($q, $e) => $q->where('estatus', $e))
+            ->when($request->desde, fn ($q, $d) => $q->whereDate('entrega', '>=', $d))
+            ->when($request->hasta, fn ($q, $h) => $q->whereDate('entrega', '<=', $h))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
-        return response()->json($pedidos);
+        return view('pedidos.index', compact('pedidos'));
     }
 
-    // Registrar un pedido nuevo
-    public function store(Request $request)
+    public function create()
     {
-        $datos = $request->validate([
-            'cliente' => 'required|string|min:3|max:255',
-            'producto' => 'required|string|max:255',
-            'cantidad' => 'required|integer|min:1',
-            'entrega' => 'required|date',
-        ]);
+        $productos = $this->productosActivos();
 
-        $pedido = Pedido::create([
-            'po' => 'PO-' . date('Y') . '-' . strtoupper(Str::random(6)),
-            'cliente' => $datos['cliente'],
-            'producto' => $datos['producto'],
-            'cantidad' => $datos['cantidad'],
-            'entrega' => $datos['entrega'],
-            'estatus' => 'Orden recibida',
-            'incidencias' => [],
-        ]);
-
-        return response()->json([
-            'mensaje' => 'Pedido registrado correctamente.',
-            'pedido' => $pedido,
-        ], 201);
+        return view('pedidos.create', compact('productos'));
     }
 
-    // Registrar una incidencia y actualizar la fecha de entrega
-    public function guardarIncidencia(Request $request, Pedido $pedido)
+    public function store(StorePedidoRequest $request)
     {
-        $datos = $request->validate([
-            'tipo' => 'required|string|max:255',
-            'causa' => 'required|string|min:5',
-            'nuevaFecha' => 'required|date',
-        ]);
+        Pedido::create($request->validated());
 
-        $incidencias = $pedido->incidencias ?? [];
+        return redirect()->route('pedidos.index')->with('ok', 'Pedido registrado correctamente.');
+    }
 
-        $incidencias[] = [
-            'tipo' => $datos['tipo'],
-            'causa' => $datos['causa'],
-            'nuevaFecha' => $datos['nuevaFecha'],
-            'registrada' => now()->toISOString(),
-        ];
+    public function edit(Pedido $pedido)
+    {
+        $productos = $this->productosActivos($pedido->producto_id);
 
-        $pedido->update([
-            'incidencias' => $incidencias,
-            'entrega' => $datos['nuevaFecha'],
-        ]);
+        return view('pedidos.edit', compact('pedido', 'productos'));
+    }
 
-        return response()->json([
-            'mensaje' => 'Incidencia registrada correctamente.',
-            'pedido' => $pedido->fresh(),
-        ]);
+    public function update(UpdatePedidoRequest $request, Pedido $pedido)
+    {
+        $pedido->update($request->validated());
+
+        return redirect()->route('pedidos.index')->with('ok', 'Pedido actualizado.');
+    }
+
+    public function destroy(Pedido $pedido)
+    {
+        $pedido->delete();
+
+        return redirect()->route('pedidos.index')->with('ok', 'Pedido eliminado.');
+    }
+
+    public function actualizarEstatus(ActualizarEstatusRequest $request, Pedido $pedido)
+    {
+        $pedido->update($request->validated());
+
+        return back()->with('ok', "Estatus actualizado a «{$pedido->estatus}».");
+    }
+
+    // Al editar se incluye el producto actual del pedido aunque ya esté inactivo
+    private function productosActivos(?int $incluirId = null)
+    {
+        return Producto::where('activo', true)
+            ->when($incluirId, fn ($q, $id) => $q->orWhere('id', $id))
+            ->orderBy('nombre')
+            ->get();
     }
 }

@@ -37,8 +37,9 @@
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="{{ route('vochito.pedidos') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.productos') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
+                <li><a class="dropdown-item" href="{{ route('pedidos.create') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
+                <li><a class="dropdown-item" href="{{ route('pedidos.index') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
+                <li><a class="dropdown-item" href="{{ route('productos.index') }}"><i class="fa-solid fa-box fa-fw"></i> Productos</a></li>
                 <li><a class="dropdown-item" href="{{ route('vochito.historial') }}"><i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historial</a></li>
                 <li><a class="dropdown-item" href="{{ route('vochito.notificaciones') }}"><i class="fa-solid fa-bell fa-fw"></i> Notificaciones</a></li>
                 <li><hr class="dropdown-divider" /></li>
@@ -50,7 +51,7 @@
               </ul>
             </li>
             <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
-            <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-secondary-custom" href="{{ route('vochito.iniciosesion') }}"><i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión</a></li>
+            @include('partials.sesion')
           </ul>
         </div>
       </div>
@@ -58,39 +59,77 @@
 
     <header class="bg-primary text-white text-center py-5">
       <div class="container py-3">
-        <h1 class="display-5 fw-bold">Búsqueda de productos</h1>
-        <p class="lead">Encuentra productos y artículos de las tiendas locales de tu comunidad.</p>
+        <h1 class="display-5 fw-bold">Búsqueda de pedidos</h1>
+        <p class="lead">Encuentra pedidos por número de orden (PO), cliente, producto, fecha de entrega o estatus.</p>
       </div>
     </header>
 
     <main class="container my-5">
       <div class="card shadow-sm border-0 p-4 mb-4">
-        <form id="formBusqueda" role="search" novalidate>
+        <form method="GET" action="{{ route('vochito.busquedas') }}" role="search">
           <div class="row g-3 align-items-end">
             <div class="col-md-6 col-lg-4">
-              <label for="texto" class="form-label fw-bold">Producto o tienda</label>
-              <input type="search" class="form-control" id="texto" placeholder="Ej. miel, tortillas, Don Chuy" />
+              <label for="po" class="form-label fw-bold">PO, cliente o producto</label>
+              <input type="search" class="form-control @error('po') is-invalid @enderror" id="po" name="po" maxlength="120"
+                     placeholder="Ej. PO-0003, María, miel" value="{{ $filtros['po'] ?? '' }}" />
+              @error('po') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-6 col-lg-3">
-              <label for="categoria" class="form-label fw-bold">Categoría</label>
-              <select id="categoria" class="form-select"><option value="">Todas</option></select>
+              <label for="fecha" class="form-label fw-bold">Fecha de entrega</label>
+              <input type="date" class="form-control @error('fecha') is-invalid @enderror" id="fecha" name="fecha" value="{{ $filtros['fecha'] ?? '' }}" />
+              @error('fecha') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
             <div class="col-md-6 col-lg-3">
-              <label for="precioMax" class="form-label fw-bold">Precio máximo ($)</label>
-              <input type="number" class="form-control" id="precioMax" min="0" step="1" placeholder="Sin límite" />
-              <div class="invalid-feedback">Escribe un precio mayor o igual a 0.</div>
+              <label for="estatus" class="form-label fw-bold">Estatus</label>
+              <select id="estatus" name="estatus" class="form-select">
+                <option value="">Todos</option>
+                @foreach (\App\Models\Pedido::ESTATUS as $e)
+                  <option value="{{ $e }}" @selected(($filtros['estatus'] ?? '') === $e)>{{ $e }}</option>
+                @endforeach
+              </select>
             </div>
             <div class="col-md-6 col-lg-2 d-flex gap-2">
               <button type="submit" class="btn btn-primary flex-grow-1"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
-              <button type="reset" class="btn btn-outline-secondary" aria-label="Limpiar filtros"><i class="fa-solid fa-eraser"></i></button>
+              <a href="{{ route('vochito.busquedas') }}" class="btn btn-outline-secondary" aria-label="Limpiar filtros"><i class="fa-solid fa-eraser"></i></a>
             </div>
           </div>
         </form>
       </div>
 
-      <p id="resumen" class="text-muted" aria-live="polite"></p>
-      <div id="resultados" class="row g-4"></div>
-      <p id="sinResultados" class="text-center text-muted mt-4 d-none">No encontramos productos con esos filtros.</p>
+      <p class="text-muted" aria-live="polite">{{ $resultados->total() }} {{ $resultados->total() === 1 ? 'pedido encontrado' : 'pedidos encontrados' }}.</p>
+
+      <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>PO</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th class="text-end">Cantidad</th>
+                <th>Entrega</th>
+                <th>Estatus</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse ($resultados as $pedido)
+                <tr>
+                  <td class="fw-bold text-nowrap">PO-{{ str_pad($pedido->id, 4, '0', STR_PAD_LEFT) }}</td>
+                  <td>{{ $pedido->cliente }}</td>
+                  <td>{{ $pedido->producto->nombre ?? 'Producto eliminado' }}</td>
+                  <td class="text-end">{{ $pedido->cantidad }}</td>
+                  <td class="text-nowrap">{{ $pedido->entrega->format('d/m/Y H:i') }}</td>
+                  <td><span class="badge text-bg-{{ \App\Models\Pedido::COLOR_ESTATUS[$pedido->estatus] ?? 'secondary' }}">{{ $pedido->estatus }}</span></td>
+                </tr>
+              @empty
+                <tr><td colspan="6" class="text-center text-muted py-4">No encontramos pedidos con esos filtros.</td></tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-4">{{ $resultados->links() }}</div>
     </main>
 
     <footer class="bg-custom-dark text-white text-center py-3 mt-auto">
@@ -106,7 +145,5 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/productos-locales.js"></script>
-    <script src="js/busquedas.js"></script>
   </body>
 </html>

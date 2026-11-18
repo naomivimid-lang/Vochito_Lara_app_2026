@@ -1,233 +1,132 @@
 /*
  * pedidos.js - RF02 (registro de pedidos) y RF05 (registro de incidencias)
- * Los pedidos e incidencias se guardan en PostgreSQL mediante Laravel.
- * Se conserva Bochito para las funciones de sesión y presentación.
+ * Requiere sesión iniciada. Usa Bochito (js/datos.js) para guardar los datos.
+ * Endpoints equivalentes en el backend:
+ *   POST /api/pedidos                      -> crear pedido
+ *   POST /api/pedidos/:id/incidencias      -> registrar incidencia
  */
-
 const sesion = Bochito.requerirSesion();
+if (sesion) Bochito.activarBarraSesion(sesion);
 
-if (sesion) {
-    Bochito.activarBarraSesion(sesion);
-}
-
-// Token CSRF para las peticiones a Laravel
-const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-// Pedidos cargados desde PostgreSQL
-let pedidosActuales = [];
-
+// getElementById: formularios, tabla y modal tienen id único, es lo más directo para un solo nodo.
 const formPedido = document.getElementById("formPedido");
 const tabla = document.getElementById("tablaPedidos");
 const mensaje = document.getElementById("mensaje");
 const modal = new bootstrap.Modal(document.getElementById("modalIncidencia"));
 const formIncidencia = document.getElementById("formIncidencia");
-
 let pedidoIncidencia = null;
 
-// Campos del pedido
-const campos = ["cliente", "producto", "cantidad", "entrega"].map((id) =>
-    document.getElementById(id),
-);
+// Campos del pedido; se reutilizan en la validación en vivo, en la barra de progreso y al enviar
+const campos = ["cliente", "producto", "cantidad", "entrega"].map((id) => document.getElementById(id));
 
-// Barra de progreso
+// Barra de progreso (interacción libre): avanza 25 % por cada campo válido.
+// Se usan las clases de ancho de Bootstrap (w-25, w-50...) en vez de style en línea.
 const progreso = document.getElementById("progresoPedido");
+// querySelector: la barra es el único .progress-bar dentro de su contenedor, basta el primero.
 const barraProgreso = progreso.querySelector(".progress-bar");
 const textoProgreso = document.getElementById("textoProgreso");
-
 const CLASES_ANCHO = ["w-0", "w-25", "w-50", "w-75", "w-100"];
 
-// Fecha y hora local
+// "yyyy-MM-ddTHH:mm" en hora local, para el atributo min de datetime-local
 function ahoraLocal() {
-    const d = new Date();
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
 }
 
-// Mostrar mensajes
 function mostrarMensaje(texto, tipo) {
-    mensaje.textContent = texto;
-    mensaje.className = `alert alert-${tipo}`;
+  mensaje.textContent = texto;
+  mensaje.className = `alert alert-${tipo}`;
 }
 
-// Mostrar errores del servidor
-function mostrarError(data, respuesta) {
-    if (respuesta.status === 419) {
-        return "La sesión o el token de seguridad expiró. Recarga la página.";
-    }
-
-    if (data.errors) {
-        return Object.values(data.errors).flat().join(" ");
-    }
-
-    return data.message || "Ocurrió un error al comunicarse con el servidor.";
-}
-
-// Consultar pedidos guardados en PostgreSQL
-async function cargarPedidos() {
-    const respuesta = await fetch("/pedidos/datos", {
-        headers: {
-            Accept: "application/json",
-        },
-    });
-
-    const data = await respuesta.json();
-
-    if (!respuesta.ok) {
-        throw new Error(mostrarError(data, respuesta));
-    }
-
-    pedidosActuales = data;
-    dibujarTabla();
-}
-
-// Dibujar tabla
 function dibujarTabla() {
-    tabla.innerHTML = "";
-
-    pedidosActuales.forEach((p) => {
-        const fila = document.createElement("tr");
-
-        fila.append(
-            Bochito.celda(p.po),
-            Bochito.celda(p.cliente),
-            Bochito.celda(p.producto),
-            Bochito.celda(p.cantidad),
-            Bochito.celda(Bochito.formatoFecha(p.entrega)),
-            Bochito.celdaEstatus(p.estatus),
-        );
-
-        const acciones = document.createElement("td");
-        acciones.className = "text-end text-nowrap";
-
-        const incidencias = Array.isArray(p.incidencias) ? p.incidencias : [];
-
-        if (incidencias.length > 0) {
-            const aviso = document.createElement("span");
-            aviso.className = "badge text-bg-warning me-2";
-            aviso.textContent = `${incidencias.length} incidencia(s)`;
-            acciones.appendChild(aviso);
-        }
-
-        const btn = document.createElement("button");
-        btn.className = "btn btn-outline-primary btn-sm";
-        btn.dataset.id = p.id;
-        btn.innerHTML =
-            '<i class="fa-solid fa-triangle-exclamation"></i> Incidencia';
-
-        acciones.appendChild(btn);
-        fila.appendChild(acciones);
-        tabla.appendChild(fila);
-    });
+  tabla.innerHTML = "";
+  Bochito.getPedidos().forEach((p) => {
+    const fila = document.createElement("tr");
+    fila.append(
+      Bochito.celda(p.po), Bochito.celda(p.cliente), Bochito.celda(p.producto),
+      Bochito.celda(p.cantidad), Bochito.celda(Bochito.formatoFecha(p.entrega)),
+      Bochito.celdaEstatus(p.estatus)
+    );
+    const acciones = document.createElement("td");
+    acciones.className = "text-end text-nowrap";
+    if (p.incidencias.length) {
+      const aviso = document.createElement("span");
+      aviso.className = "badge text-bg-warning me-2";
+      aviso.textContent = `${p.incidencias.length} incidencia(s)`;
+      acciones.appendChild(aviso);
+    }
+    const btn = document.createElement("button");
+    btn.className = "btn btn-outline-primary btn-sm";
+    btn.dataset.id = p.id; // la delegación de eventos (alClicTabla) lee el pedido desde data-id
+    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Incidencia';
+    acciones.appendChild(btn);
+    fila.appendChild(acciones);
+    tabla.appendChild(fila);
+  });
 }
 
-// Fecha mínima para registrar un pedido
+// ---- RF02: registrar pedido ----
 document.getElementById("entrega").min = ahoraLocal();
 
-// Validación de campos
+/** Reglas de validación de un campo (las usan blur, input y submit). */
 function campoValido(c) {
-    let ok = c.checkValidity() && c.value.trim() !== "";
-
-    if (c.id === "cantidad") {
-        ok = ok && Number.isInteger(Number(c.value)) && Number(c.value) > 0;
-    }
-
-    if (c.id === "entrega") {
-        ok = ok && new Date(c.value) > new Date();
-    }
-
-    return ok;
+  let ok = c.checkValidity() && c.value.trim() !== "";
+  if (c.id === "cantidad") ok = ok && Number.isInteger(Number(c.value)) && Number(c.value) > 0;
+  if (c.id === "entrega") ok = ok && new Date(c.value) > new Date(); // debe ser futura
+  return ok;
 }
 
-// Actualizar barra de progreso
+/** Barra de progreso: refleja cuántos campos ya son válidos. */
 function actualizarProgreso() {
-    const completos = campos.filter(campoValido).length;
-    const porcentaje = (completos / campos.length) * 100;
-
-    barraProgreso.classList.remove(...CLASES_ANCHO);
-    barraProgreso.classList.add(CLASES_ANCHO[completos]);
-    barraProgreso.classList.toggle("bg-success", completos === campos.length);
-
-    progreso.setAttribute("aria-valuenow", porcentaje);
-    textoProgreso.textContent = `${porcentaje} % completado`;
+  const completos = campos.filter(campoValido).length;
+  const porcentaje = (completos / campos.length) * 100;
+  barraProgreso.classList.remove(...CLASES_ANCHO);
+  barraProgreso.classList.add(CLASES_ANCHO[completos]);
+  barraProgreso.classList.toggle("bg-success", completos === campos.length);
+  progreso.setAttribute("aria-valuenow", porcentaje);
+  textoProgreso.textContent = `${porcentaje} % completado`;
 }
 
-// Validación mientras se escribe
+/** Evento input (delegado en el formulario): quita el error en cuanto el campo es válido y avanza la barra. */
 function alEscribirPedido(e) {
-    if (!campos.includes(e.target)) return;
-
-    if (e.target.classList.contains("is-invalid") && campoValido(e.target)) {
-        e.target.classList.remove("is-invalid");
-    }
-
-    actualizarProgreso();
+  if (!campos.includes(e.target)) return;
+  if (e.target.classList.contains("is-invalid") && campoValido(e.target)) e.target.classList.remove("is-invalid");
+  actualizarProgreso();
 }
 
-// Validación al salir del campo
+/** Evento focusout (equivale a blur pero sí burbujea, por eso se puede delegar): valida al salir del campo. */
 function alSalirDeCampo(e) {
-    if (!campos.includes(e.target)) return;
-
-    e.target.classList.toggle("is-invalid", !campoValido(e.target));
+  if (!campos.includes(e.target)) return;
+  e.target.classList.toggle("is-invalid", !campoValido(e.target));
 }
 
-// Limpiar formulario
+/** Evento reset: limpia errores y reinicia la barra de progreso. */
 function alLimpiarPedido() {
-    campos.forEach((c) => c.classList.remove("is-invalid"));
-    setTimeout(actualizarProgreso, 0);
+  campos.forEach((c) => c.classList.remove("is-invalid"));
+  setTimeout(actualizarProgreso, 0); // esperar a que el navegador vacíe los campos
 }
 
-// RF02: registrar pedido en PostgreSQL
-async function alEnviarPedido(e) {
-    e.preventDefault();
+/** Evento submit: valida todo el formulario y registra el pedido. */
+function alEnviarPedido(e) {
+  e.preventDefault();
+  let valido = true;
+  campos.forEach((c) => {
+    const ok = campoValido(c);
+    c.classList.toggle("is-invalid", !ok);
+    valido = valido && ok;
+  });
+  if (!valido) return mostrarMensaje("Revisa los campos marcados.", "danger");
 
-    let valido = true;
-
-    campos.forEach((c) => {
-        const ok = campoValido(c);
-        c.classList.toggle("is-invalid", !ok);
-        valido = valido && ok;
-    });
-
-    if (!valido) {
-        mostrarMensaje("Revisa los campos marcados.", "danger");
-        return;
-    }
-
-    const [cliente, producto, cantidad, entrega] = campos;
-
-    try {
-        const respuesta = await fetch("/pedidos", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                "X-CSRF-TOKEN": csrfToken,
-            },
-            body: JSON.stringify({
-                cliente: cliente.value.trim(),
-                producto: producto.value.trim(),
-                cantidad: Number(cantidad.value),
-                entrega: entrega.value,
-            }),
-        });
-
-        const data = await respuesta.json();
-
-        if (!respuesta.ok) {
-            throw new Error(mostrarError(data, respuesta));
-        }
-
-        formPedido.reset();
-        campos.forEach((c) => c.classList.remove("is-invalid"));
-
-        await cargarPedidos();
-
-        mostrarMensaje(
-            `Pedido ${data.pedido.po} registrado con estatus "${data.pedido.estatus}".`,
-            "success",
-        );
-    } catch (error) {
-        mostrarMensaje(error.message, "danger");
-    }
+  const [cliente, producto, cantidad, entrega] = campos;
+  const nuevo = Bochito.agregarPedido({
+    cliente: cliente.value.trim(), producto: producto.value.trim(),
+    cantidad: Number(cantidad.value), entrega: entrega.value,
+  });
+  formPedido.reset();
+  campos.forEach((c) => c.classList.remove("is-invalid"));
+  mostrarMensaje(`Pedido ${nuevo.po} registrado con estatus "${nuevo.estatus}".`, "success");
+  dibujarTabla();
 }
 
 formPedido.addEventListener("submit", alEnviarPedido);
@@ -235,105 +134,48 @@ formPedido.addEventListener("input", alEscribirPedido);
 formPedido.addEventListener("focusout", alSalirDeCampo);
 formPedido.addEventListener("reset", alLimpiarPedido);
 
-// RF05: abrir modal de incidencia
+// ---- RF05: registrar incidencia ----
 function abrirIncidencia(pedido) {
-    pedidoIncidencia = pedido;
-
-    document.getElementById("incidenciaPedido").textContent =
-        `${pedido.po} · ${pedido.cliente} · ${pedido.producto}`;
-
-    formIncidencia.reset();
-
-    formIncidencia.querySelectorAll(".is-invalid").forEach((c) => {
-        c.classList.remove("is-invalid");
-    });
-
-    document.getElementById("nuevaFecha").min = ahoraLocal();
-
-    modal.show();
+  pedidoIncidencia = pedido;
+  document.getElementById("incidenciaPedido").textContent = `${pedido.po} · ${pedido.cliente} · ${pedido.producto}`;
+  formIncidencia.reset();
+  // querySelectorAll: pueden estar marcados varios campos a la vez y hay que limpiarlos todos.
+  formIncidencia.querySelectorAll(".is-invalid").forEach((c) => c.classList.remove("is-invalid"));
+  document.getElementById("nuevaFecha").min = ahoraLocal();
+  modal.show();
 }
 
-// Buscar pedido seleccionado en la tabla
+/** Evento click (delegado en la tabla): un solo listener atiende todos los botones "Incidencia". */
 function alClicTabla(e) {
-    const btn = e.target.closest("button[data-id]");
-
-    if (!btn) return;
-
-    const pedido = pedidosActuales.find((p) => p.id === Number(btn.dataset.id));
-
-    if (pedido) abrirIncidencia(pedido);
+  const btn = e.target.closest("button[data-id]");
+  if (!btn) return;
+  const pedido = Bochito.getPedidos().find((p) => p.id === Number(btn.dataset.id));
+  if (pedido) abrirIncidencia(pedido);
 }
 
-// RF05: guardar incidencia en PostgreSQL
-async function alEnviarIncidencia(e) {
-    e.preventDefault();
+/** Evento submit del modal: valida y registra la incidencia. */
+function alEnviarIncidencia(e) {
+  e.preventDefault();
+  const tipo = document.getElementById("tipoIncidencia");
+  const causa = document.getElementById("causaIncidencia");
+  const fecha = document.getElementById("nuevaFecha");
+  const oks = [tipo.value !== "", causa.value.trim().length >= 5, fecha.value !== "" && new Date(fecha.value) > new Date()];
+  [tipo, causa, fecha].forEach((c, i) => c.classList.toggle("is-invalid", !oks[i]));
+  if (!oks.every(Boolean)) return;
 
-    if (!pedidoIncidencia) return;
-
-    const tipo = document.getElementById("tipoIncidencia");
-    const causa = document.getElementById("causaIncidencia");
-    const fecha = document.getElementById("nuevaFecha");
-
-    const oks = [
-        tipo.value !== "",
-        causa.value.trim().length >= 5,
-        fecha.value !== "" && new Date(fecha.value) > new Date(),
-    ];
-
-    [tipo, causa, fecha].forEach((c, i) => {
-        c.classList.toggle("is-invalid", !oks[i]);
-    });
-
-    if (!oks.every(Boolean)) return;
-
-    try {
-        const respuesta = await fetch(
-            `/pedidos/${pedidoIncidencia.id}/incidencias`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-                body: JSON.stringify({
-                    tipo: tipo.value,
-                    causa: causa.value.trim(),
-                    nuevaFecha: fecha.value,
-                }),
-            },
-        );
-
-        const data = await respuesta.json();
-
-        if (!respuesta.ok) {
-            throw new Error(mostrarError(data, respuesta));
-        }
-
-        const po = pedidoIncidencia.po;
-
-        modal.hide();
-        pedidoIncidencia = null;
-
-        await cargarPedidos();
-
-        mostrarMensaje(
-            `Incidencia registrada en ${po}. Se notificará al cliente.`,
-            "warning",
-        );
-    } catch (error) {
-        mostrarMensaje(error.message, "danger");
-    }
+  const lista = Bochito.getPedidos();
+  const p = lista.find((x) => x.id === pedidoIncidencia.id);
+  p.incidencias.push({ tipo: tipo.value, causa: causa.value.trim(), nuevaFecha: fecha.value, registrada: new Date().toISOString() });
+  p.entrega = fecha.value; // la nueva fecha estimada reemplaza a la anterior
+  Bochito.savePedidos(lista);
+  modal.hide();
+  dibujarTabla();
+  // RF06 (notificación al cliente) se resolverá en el backend; aquí solo se informa.
+  mostrarMensaje(`Incidencia registrada en ${p.po}. Se notificará al cliente.`, "warning");
 }
 
 tabla.addEventListener("click", alClicTabla);
 formIncidencia.addEventListener("submit", alEnviarIncidencia);
 
-// Inicializar página
 actualizarProgreso();
-
-if (sesion) {
-    cargarPedidos().catch((error) => {
-        mostrarMensaje(error.message, "danger");
-    });
-}
+if (sesion) dibujarTabla();

@@ -1,9 +1,30 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConsultaController;
+use App\Http\Controllers\EvidenciaController;
+use App\Http\Controllers\IncidenciaController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\UserController;
+
+// CRUD de Productos y Pedidos
+Route::resource('productos', ProductoController::class)->except('show');
+Route::resource('pedidos', PedidoController::class)->except('show');
+Route::patch('pedidos/{pedido}/estatus', [PedidoController::class, 'actualizarEstatus'])->name('pedidos.estatus');
+
+// CRUD RESTful de Solicitudes (Cancelaciones y Modificaciones)
+Route::resource('solicitudes', SolicitudController::class);
+Route::patch('/solicitudes/{id}/estado', [SolicitudController::class, 'updateEstado'])->name('vochito.solicitudes.estado');
+
+// Reporte de Desempeño
+Route::resource('reportes', ReporteController::class)->only(['index', 'store']);
+Route::get('/reporte-desempeno', [ReporteController::class, 'index'])->name('vochito.reporte_desempeno');
+Route::post('/reporte-desempeno/generar', [ReporteController::class, 'generar'])->name('vochito.reporte.generar');
 
 // Página principal
 Route::get('/', function () {
@@ -13,25 +34,37 @@ Route::get('/', function () {
 // Páginas de Vochito
 Route::view('/nosotros', 'vochito.nosotros')->name('vochito.nosotros');
 Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
-Route::view('/catalogo', 'vochito.catalogo')->name('vochito.catalogo');
+Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('vochito.catalogo');
 
-// Módulo de consultas
+// Módulo de consultas: búsquedas, historial y tiempo de respuesta (PostgreSQL)
 Route::get('/busquedas', [ConsultaController::class, 'busquedas'])->name('vochito.busquedas');
 Route::get('/historial', [ConsultaController::class, 'historial'])->name('vochito.historial');
 Route::get('/tiempo-respuesta', [ConsultaController::class, 'tiempoRespuesta'])->name('vochito.tiempo_respuesta');
 
-// Módulo de pedidos y productos
-Route::view('/pedidos', 'vochito.pedidos')->name('vochito.pedidos');
-Route::view('/productos', 'vochito.productos')->name('vochito.productos');
+// CRUD de Notificaciones
+Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('vochito.notificaciones');
+Route::post('/notificaciones', [NotificacionController::class, 'store'])->name('notificaciones.store');
+Route::put('/notificaciones/{id}', [NotificacionController::class, 'update'])->name('notificaciones.update');
+Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
 
-Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
-Route::view('/incidencias', 'vochito.incidencias')->name('vochito.incidencias');
-Route::view('/evidencias', 'vochito.evidencias')->name('vochito.evidencias');
-Route::view('/cancelacion', 'vochito.cancelacion')->name('vochito.cancelacion');
-Route::view('/modificacion', 'vochito.modificacion')->name('vochito.modificacion');
-Route::view('/reporte-desempeno', 'vochito.reporte_desempeno')->name('vochito.reporte_desempeno');
+// CRUD de Incidencias
+Route::get('/incidencias', [IncidenciaController::class, 'index'])->name('vochito.incidencias');
+Route::post('/incidencias', [IncidenciaController::class, 'store'])->name('incidencias.store');
+Route::put('/incidencias/{id}', [IncidenciaController::class, 'update'])->name('incidencias.update');
+Route::delete('/incidencias/{id}', [IncidenciaController::class, 'destroy'])->name('incidencias.destroy');
+
+// CRUD de Evidencias
+Route::get('/evidencias', [EvidenciaController::class, 'index'])->name('vochito.evidencias');
+Route::post('/evidencias', [EvidenciaController::class, 'store'])->name('evidencias.store');
+Route::put('/evidencias/{id}', [EvidenciaController::class, 'update'])->name('evidencias.update');
+Route::delete('/evidencias/{id}', [EvidenciaController::class, 'destroy'])->name('evidencias.destroy');
+
+// Vistas de Cancelación y Modificación conectadas a SolicitudController
+Route::get('/cancelacion', [SolicitudController::class, 'cancelacionView'])->name('vochito.cancelacion');
+Route::get('/modificacion', [SolicitudController::class, 'modificacionView'])->name('vochito.modificacion');
+
+// Otras páginas
 Route::view('/contacto', 'vochito.contacto')->name('vochito.contacto');
-
 Route::view('/ayuda', 'vochito.ayuda')->name('vochito.ayuda');
 Route::view('/privacidad', 'vochito.privacidad')->name('vochito.privacidad');
 Route::view('/requerimientos', 'vochito.rnf')->name('vochito.rnf');
@@ -39,22 +72,22 @@ Route::view('/rnf03', 'vochito.RNF03')->name('vochito.rnf03');
 Route::view('/rnf04', 'vochito.RNF04')->name('vochito.rnf04');
 Route::view('/rnf05', 'vochito.RNF05')->name('vochito.rnf05');
 Route::view('/rnf06', 'vochito.RNF06')->name('vochito.rnf06');
-
-// Inicio de sesión
 Route::view('/iniciar-sesion', 'vochito.iniciosesion')->name('vochito.iniciosesion');
-
-// Índice
 Route::view('/indice', 'vochito.index')->name('vochito.index');
 
-// Conexión de pedidos con PostgreSQL
-Route::get('/pedidos/datos', [PedidoController::class, 'index']);
-Route::post('/pedidos', [PedidoController::class, 'store']);
-Route::post('/pedidos/{pedido}/incidencias', [PedidoController::class, 'guardarIncidencia']);
+// Registro de usuarios e inicio de sesión (solo para quien no ha iniciado sesión)
+Route::middleware('guest')->group(function () {
+    Route::view('/registro', 'vochito.registro')->name('registro');
+    Route::post('/registro', [AuthController::class, 'register'])->name('registro.store');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login');
+});
 
-// Consultar pedidos desde PostgreSQL con filtros y paginación
-Route::get('/productos/datos', [ConsultaController::class, 'productos'])
-    ->name('productos.datos');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-// Actualizar el estatus de un pedido en PostgreSQL
-Route::patch('/pedidos/{pedido}/estatus', [PedidoController::class, 'actualizarEstatus'])
-    ->name('pedidos.estatus');
+// Administración de usuarios (solo administradores)
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
+    Route::get('/usuarios/{usuario}/editar', [UserController::class, 'edit'])->name('usuarios.edit');
+    Route::put('/usuarios/{usuario}', [UserController::class, 'update'])->name('usuarios.update');
+    Route::delete('/usuarios/{usuario}', [UserController::class, 'destroy'])->name('usuarios.destroy');
+});

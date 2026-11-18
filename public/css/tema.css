@@ -40,6 +40,13 @@
   border-color: #8fd3d3;
 }
 
+/* estilos.css pinta los botones de contorno con el azul oscuro del tema claro */
+[data-bs-theme="dark"] .btn-outline-primary,
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: #8fd3d3;
+  border-color: #8fd3d3;
+}
+
 [data-bs-theme="dark"] .lista-solicitudes li {
   background-color: var(--blanco);
 }
@@ -59,3 +66,70 @@
 [data-bs-theme="dark"] .icono-circulo.fondo-gris {
   color: #03455b;
 }
+
+/* ==========================================================
+   Bloques y textos que las hojas de cada página dejan fijos
+   en claro (estilos.css, inicio.css, nosotros.css, ayuda.css):
+   tarjetas blancas, franjas beige y textos azul oscuro o gris
+   que no se leían con el tema oscuro activo.
+   ========================================================== */
+
+/* Tarjetas y cajas con fondo blanco fijo */
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .tarjeta,
+[data-bs-theme="dark"] .faq-search-box,
+[data-bs-theme="dark"] .accordion-item {
+  background-color: var(--blanco);
+  color: var(--texto);
+}
+
+/* Franjas de página y tarjetas con fondo beige fijo */
+[data-bs-theme="dark"] .principal,
+[data-bs-theme="dark"] .presentacion,
+[data-bs-theme="dark"] .acciones,
+[data-bs-theme="dark"] .support-card {
+  background: var(--beige);
+}
+
+/* Títulos y textos fijados en azul oscuro */
+[data-bs-theme="dark"] h1,
+[data-bs-theme="dark"] .tarjeta h2,
+[data-bs-theme="dark"] .card-abajo strong,
+[data-bs-theme="dark"] .dato {
+  color: var(--texto);
+}
+
+[data-bs-theme="dark"] .text-bochito {
+  color: #8fd3d3 !important;
+}
+
+/* Párrafos fijados en gris oscuro (#666, #555) */
+[data-bs-theme="dark"] .contenido-card p,
+[data-bs-theme="dark"] .icono p,
+[data-bs-theme="dark"] .beneficio p,
+[data-bs-theme="dark"] .tarjeta p,
+[data-bs-theme="dark"] .descripcion,
+[data-bs-theme="dark"] .reglas-contrasena li {
+  color: #a9bcc2;
+}
+
+/* estilos.css lo fija en #666 !important, casi invisible en oscuro */
+[data-bs-theme="dark"] .text-muted {
+  color: #a9bcc2 !important;
+}
+
+/* Avisos y estados: su fondo ya se oscurece con las variables,
+   pero el texto seguía en azul oscuro */
+[data-bs-theme="dark"] .aviso,
+[data-bs-theme="dark"] .estado,
+[data-bs-theme="dark"] .tiempo-interrupcion,
+[data-bs-theme="dark"] .tecnologia,
+[data-bs-theme="dark"] .contador-intentos,
+[data-bs-theme="dark"] .estado-bloqueo {
+  color: var(--texto);
+}
+
+[data-bs-theme="dark"] .estado-exito { background-color: #14312a; }
+[data-bs-theme="dark"] .estado-error { background-color: #3b2220; }
+[data-bs-theme="dark"] .estado-advertencia,
+[data-bs-theme="dark"] .estado-bloqueo { background-color: #38301b; }
