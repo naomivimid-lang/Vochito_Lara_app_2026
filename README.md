@@ -1,184 +1,231 @@
-# Vochito Laravel
+# VOCHITO – Envíos y Ventas
 
 ## Descripción del proyecto
 
-**Vochito Laravel** es un proyecto web desarrollado con el framework Laravel y PHP, que consiste en la adaptación del sistema Vochito a una estructura basada en el patrón de vistas Blade.
+**VOCHITO** es una aplicación web desarrollada con Laravel 12 que adapta el sistema original de Vochito a una estructura basada en el patrón MVC (Modelo-Vista-Controlador).
 
-El proyecto tiene como finalidad trasladar la interfaz del sistema original Vochito a Laravel, conservar su diseño y organizar sus recursos para facilitar su mantenimiento y futuras modificaciones.
+El sistema está enfocado en la gestión de productos y pedidos de tiendas locales, además de contar con diferentes módulos para el seguimiento y administración de las operaciones.
 
-Además, forma parte de una práctica académica enfocada en el uso de las peticiones HTTP y las operaciones CRUD (Crear, Leer, Actualizar y Eliminar).
+El proyecto forma parte de una práctica académica orientada al desarrollo web, el uso de rutas, vistas Blade, controladores, peticiones HTTP y operaciones CRUD.
 
 ## Objetivo
 
-Desarrollar una aplicación web utilizando Laravel que permita comprender y aplicar el funcionamiento de las rutas, vistas Blade, controladores y métodos HTTP mediante un proyecto basado en el sistema Vochito.
+Desarrollar una aplicación web con Laravel que permita administrar productos y pedidos, conservar las interfaces del proyecto original y aplicar operaciones CRUD mediante una estructura organizada.
 
 ## Tecnologías utilizadas
 
 - **PHP:** lenguaje de programación del lado del servidor.
-- **Laravel 12:** framework para el desarrollo de la aplicación.
-- **Blade:** motor de plantillas de Laravel para organizar las vistas.
-- **HTML5:** estructura de las páginas web.
-- **CSS3:** estilos y diseño visual.
-- **JavaScript:** interactividad y funcionalidades del prototipo.
-- **Bootstrap 5:** diseño adaptable y componentes de interfaz.
-- **Git y GitHub:** control de versiones y trabajo colaborativo.
+- **Laravel 12:** framework de desarrollo web.
+- **Blade:** motor de plantillas para las vistas.
+- **PostgreSQL:** sistema de gestión de base de datos.
+- **HTML5 y CSS3:** estructura y diseño de las interfaces.
+- **JavaScript:** funcionalidades e interactividad.
+- **Bootstrap:** componentes y diseño adaptable.
+- **Git y GitHub:** control de versiones y colaboración.
 - **Visual Studio Code:** entorno de desarrollo.
+
+## Funcionalidades
+
+### Productos
+
+- Registrar productos.
+- Consultar el listado de productos.
+- Editar información de los productos.
+- Eliminar productos.
+- Buscar productos por nombre.
+- Consultar el catálogo de productos activos.
+
+### Pedidos
+
+- Registrar pedidos.
+- Consultar pedidos registrados.
+- Editar información de los pedidos.
+- Cancelar pedidos.
+- Filtrar por cliente, estatus y fechas de entrega.
+- Actualizar el estatus de los pedidos.
+
+### Otros módulos del sistema
+
+El proyecto también conserva interfaces para:
+
+- Inicio y navegación.
+- Nosotros y servicios.
+- Búsquedas e historial.
+- Incidencias.
+- Notificaciones.
+- Evidencias de entrega.
+- Cancelaciones y modificaciones.
+- Reportes de desempeño.
+- Contacto y ayuda.
+- Requerimientos no funcionales.
 
 ## Estructura del proyecto
 
 ```text
 Vochito_Lara_app_2026/
-│
 ├── app/
-│   └── Http/
-│       └── Controllers/
-│
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   └── Requests/
+│   ├── Models/
+│   └── Providers/
+├── database/
+│   ├── factories/
+│   ├── migrations/
+│   └── seeders/
 ├── public/
 │   ├── css/
 │   ├── js/
 │   └── img/
-│
 ├── resources/
 │   └── views/
+│       ├── layouts/
+│       ├── partials/
+│       ├── pedidos/
+│       ├── productos/
 │       └── vochito/
-│           ├── inicio.blade.php
-│           ├── nosotros.blade.php
-│           ├── servicios.blade.php
-│           ├── catalogo.blade.php
-│           ├── busquedas.blade.php
-│           ├── pedidos.blade.php
-│           ├── productos.blade.php
-│           └── ...
-│
 ├── routes/
 │   └── web.php
-│
-├── database/
+├── .env.example
 ├── composer.json
-├── package.json
 └── README.md
 ```
 
-## Funcionalidades y secciones
+## Operaciones CRUD
 
-El sistema conserva diferentes apartados del proyecto original Vochito:
+El módulo de productos y el módulo de pedidos utilizan las siguientes operaciones:
 
-- **Inicio:** página principal del sistema.
-- **Nosotros:** información general del proyecto.
-- **Servicios:** presentación de los servicios disponibles.
-- **Catálogo:** sección de consulta de productos.
-- **Búsquedas:** apartado para localizar información.
-- **Pedidos:** consulta y administración de pedidos del prototipo.
-- **Productos:** sección destinada a la gestión de productos.
-- **Historial:** consulta de registros anteriores.
-- **Notificaciones:** avisos del sistema.
-- **Incidencias:** registro y consulta de problemas.
-- **Evidencias:** apartado para consultar evidencias.
-- **Cancelación y modificación:** secciones relacionadas con las solicitudes de los pedidos.
-- **Contacto y ayuda:** información de asistencia al usuario.
-- **Requerimientos:** documentación de los requerimientos no funcionales.
+| Método HTTP | Operación | Descripción                     |
+| ----------- | --------- | ------------------------------- |
+| GET         | Read      | Consultar registros.            |
+| POST        | Create    | Registrar nuevos registros.     |
+| PUT         | Update    | Modificar registros existentes. |
+| DELETE      | Delete    | Eliminar registros.             |
 
-## Peticiones HTTP y operaciones CRUD
+Para cambiar el estatus de un pedido también se utiliza una petición PATCH.
 
-Uno de los propósitos principales de este proyecto es aplicar las operaciones CRUD mediante las peticiones HTTP:
+## Base de datos
 
-| Método HTTP | Operación  | Descripción                     |
-| ----------- | ---------- | ------------------------------- |
-| GET         | Leer       | Consultar información.          |
-| POST        | Crear      | Registrar nuevos elementos.     |
-| PUT         | Actualizar | Modificar registros existentes. |
-| DELETE      | Cancelar   | Cancelar pedidos.               |
+La aplicación cuenta con migraciones y modelos para las tablas principales:
 
-La práctica busca demostrar estas operaciones utilizando las herramientas de Laravel, sus rutas y vistas Blade, sin depender de una base de datos en esta etapa del proyecto.
+| Tabla     | Información                                                          |
+| --------- | -------------------------------------------------------------------- |
+| productos | Nombre, descripción, precio, stock y estado del producto.            |
+| pedidos   | Cliente, producto relacionado, cantidad, fecha de entrega y estatus. |
+
+La relación entre productos y pedidos se establece mediante la llave foránea `producto_id`.
 
 ## Instalación y ejecución
 
-Para ejecutar el proyecto de manera local, sigue estos pasos:
-
-**1. Clonar el repositorio**
+### 1. Clonar el repositorio
 
 ```bash
 git clone https://github.com/naomivimid-lang/Vochito_Lara_app_2026.git
 ```
 
-**2. Entrar a la carpeta**
+### 2. Entrar a la carpeta
 
 ```bash
 cd Vochito_Lara_app_2026
 ```
 
-**3. Instalar las dependencias de PHP**
+### 3. Instalar dependencias
 
 ```bash
 composer install
 ```
 
-**4. Crear el archivo de configuración**
+### 4. Configurar el archivo de entorno
 
-En Windows PowerShell:
+En PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-**5. Generar la clave de Laravel**
+### 5. Generar la clave de Laravel
 
 ```bash
 php artisan key:generate
 ```
 
-**6. Iniciar el servidor**
+### 6. Configurar PostgreSQL
+
+Crear una base de datos para el proyecto y configurar las credenciales correspondientes en el archivo `.env`.
+
+Ejemplo de configuración:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=laravel
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
+```
+
+### 7. Ejecutar las migraciones y los datos de prueba
+
+```bash
+php artisan migrate --seed
+```
+
+### 8. Iniciar el servidor
 
 ```bash
 php artisan serve
 ```
 
-**7. Abrir el proyecto**
+Abrir en el navegador:
 
-En el navegador ingresa al enlace que te muestre el resultado del php
+```text
+http://127.0.0.1:8000
+```
 
-## 🌐 Rutas principales
+## Rutas principales
 
-Las siguientes son algunas de las rutas configuradas en Laravel:
+| Método | Ruta                         | Función                         |
+| ------ | ---------------------------- | ------------------------------- |
+| GET    | `/productos`                 | Consultar productos.            |
+| GET    | `/productos/create`          | Mostrar formulario de registro. |
+| POST   | `/productos`                 | Registrar producto.             |
+| GET    | `/productos/{producto}/edit` | Mostrar formulario de edición.  |
+| PUT    | `/productos/{producto}`      | Actualizar producto.            |
+| DELETE | `/productos/{producto}`      | Eliminar producto.              |
+| GET    | `/pedidos`                   | Consultar pedidos.              |
+| GET    | `/pedidos/create`            | Mostrar formulario de registro. |
+| POST   | `/pedidos`                   | Registrar pedido.               |
+| GET    | `/pedidos/{pedido}/edit`     | Mostrar formulario de edición.  |
+| PUT    | `/pedidos/{pedido}`          | Actualizar pedido.              |
+| PATCH  | `/pedidos/{pedido}/estatus`  | Actualizar estatus.             |
+| DELETE | `/pedidos/{pedido}`          | Cancelar pedido.                |
+| GET    | `/catalogo`                  | Consultar catálogo.             |
 
-| Ruta              | Vista            |
-| ----------------- | ---------------- |
-| `/`               | Inicio           |
-| `/nosotros`       | Nosotros         |
-| `/servicios`      | Servicios        |
-| `/catalogo`       | Catálogo         |
-| `/busquedas`      | Búsquedas        |
-| `/pedidos`        | Pedidos          |
-| `/productos`      | Productos        |
-| `/historial`      | Historial        |
-| `/notificaciones` | Notificaciones   |
-| `/incidencias`    | Incidencias      |
-| `/contacto`       | Contacto         |
-| `/iniciar-sesion` | Inicio de sesión |
+Para consultar todas las rutas registradas:
 
-## Trabajo colaborativo
+```bash
+php artisan route:list
+```
 
-El desarrollo de este proyecto se realiza mediante Git y GitHub, permitiendo que los integrantes del equipo puedan colaborar, realizar modificaciones, actualizar archivos y compartir avances.
+## Validaciones y seguridad
 
-Cada colaborador puede aportar mejoras al diseño, las funcionalidades y la organización del proyecto mediante commits y actualizaciones del repositorio.
+- Los formularios utilizan protección CSRF mediante `@csrf`.
+- Las operaciones PUT, PATCH y DELETE utilizan `@method`.
+- Los datos se validan en el servidor.
+- Se utilizan controladores y modelos para organizar la aplicación.
+- Las credenciales de conexión se configuran en `.env`.
+- Las vistas Blade utilizan el mecanismo de escape de Laravel.
 
-## Alcance del proyecto
+## Equipo de trabajo
 
-Esta versión está enfocada en la adaptación del sistema Vochito a Laravel y en el aprendizaje de sus herramientas principales.
+- Vital Millán Dayra Naomi.
+- Guerrero López Miguel Ángel.
+- Carpio Campos Rodrigo.
+- Ortiz Salguero Geazul Guadalupe.
+- Lorenzana Hernández Aarón Dahir.
 
-La práctica contempla el uso de vistas Blade, rutas web, controladores y operaciones CRUD, utilizando datos de prueba y sin implementar una conexión a una base de datos.
+## Evidencias
 
-## 👩‍💻 Equipo
+Las capturas de pantalla del desarrollo se encuentran en la carpeta `docs/capturas/`.
 
-- Vital Millán Dayra Naomi
-- Guerrero López Miguel Ángel
-- Carpio Campos Rodrigo
-- Ortiz Salguero Geazul Guadalupe
-- Lorenzana Hernández Aarón Dahir
-
-## Evidencia
-
-## ![Imagen del proyecto](public/img/fff1.png)
-
-![Imagen del Proyecto](<Captura de pantalla 2026-11-04 145333.png>)
-**Vochito Laravel – Proyecto académico 2026.**
+**VOCHITO – Proyecto académico 2026.**
