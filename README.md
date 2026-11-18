@@ -154,7 +154,7 @@ Puedes ver la lista completa con `php artisan route:list`.
 | Vital Millán Dayra Naomi | |
 | Carpio Campos Rodrigo | |
 | Ortiz Salguero Geazul Guadalupe | |
-| Lorenzana Hernández Aarón Dahir | |
+| Lorenzana Hernández Aarón Dahir | Cancelaciones, modificaciones, reporte de desempeño, layouts y rutas resource |
 
 ## Evidencia
 
@@ -163,3 +163,49 @@ Puedes ver la lista completa con `php artisan route:list`.
 ![Imagen del proyecto](<Captura de pantalla 2026-11-04 145333.png>)
 
 **Vochito Laravel – Proyecto académico 2026.**
+
+
+---
+
+## Aportaciones de Lorenzana Hernández Aarón Dahir
+
+### Issue #7 (Aarón): Cancelaciones, modificaciones y reportes
+
+**Interfaces trabajadas:**
+
+- `cancelacion.blade.php`
+- `modificacion.blade.php`
+- `reporte_desempeno.blade.php`
+
+**Actividades realizadas:**
+
+- Registro de solicitudes de cancelación y de modificación de pedidos.
+- Consulta de las solicitudes realizadas en una tabla con filtro por estado (Pendiente, Aprobada, Rechazada).
+- Actualización del estado de las solicitudes (aprobar, rechazar o reabrir).
+- Eliminación de solicitudes cuando corresponde.
+- Regla de negocio: no se permite cancelar ni modificar un pedido con estatus "En tránsito".
+- Búsqueda en vivo del pedido al escribir la orden de compra (PO).
+- Generación de reportes por rango de fechas, con atajos (7 días, 30 días, este año, histórico).
+- Indicadores de pedidos entregados a tiempo, retrasados y cancelados, con porcentaje de efectividad y tabla de desglose.
+
+**Controladores:** `SolicitudController.php` y `ReporteController.php`.
+
+### Issue #16 (Aaron2): Estructura del backend
+
+- **Migraciones y modelos:** tabla `solicitudes` (`2026_11_18_100000_create_solicitudes_table.php`) y modelo `Solicitud` integrado con `Pedido`, `Producto`, `Incidencia` y `Evidencia`.
+- **Relaciones:** un `Pedido` tiene muchas `Solicitudes` (`hasMany`), y cada `Solicitud` pertenece a un `Pedido` (`belongsTo` por `pedido_id`).
+- **Validaciones de formularios** con Form Requests y mensajes en español:
+  `StoreSolicitudRequest`, `UpdateSolicitudRequest` y `GenerarReporteRequest`.
+- **Rutas RESTful** organizadas con `Route::resource()` para solicitudes y reportes integradas con `productos` y `pedidos`.
+- **Layout y formularios reutilizables:**
+  - `layouts/app.blade.php` y `partials/flash.blade.php` integrados en las vistas de cancelación, modificación y reportes.
+  - `partials/form_solicitud.blade.php` (mismo formulario reutilizable para cancelación y modificación).
+- **Seeder** con datos de prueba (`SolicitudSeeder.php` integrado en `DatabaseSeeder.php`).
+
+### Ejecución de migraciones y datos de prueba
+
+Después de configurar la base de datos en el archivo `.env`:
+
+```bash
+php artisan migrate --seed
+```

@@ -1,0 +1,211 @@
+/*
+ * reportes.js - Generación dinámica e interactiva del Reporte de Desempeño
+ * Calcula pedidos entregados a tiempo, retrasados y cancelados por rango de fechas.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const formReporte = document.getElementById("formReporte");
+  const inputDesde = document.getElementById("rep-desde");
+  const inputHasta = document.getElementById("rep-hasta");
+
+  const kpiATiempo = document.getElementById("kpiATiempo");
+  const kpiRetrasados = document.getElementById("kpiRetrasados");
+  const kpiCancelados = document.getElementById("kpiCancelados");
+  const kpiTotal = document.getElementById("kpiTotal");
+  const kpiEfectividad = document.getElementById("kpiEfectividad");
+
+  const barATiempo = document.getElementById("barATiempo");
+  const barRetrasados = document.getElementById("barRetrasados");
+  const barCancelados = document.getElementById("barCancelados");
+
+  const cuerpoTablaReporte = document.getElementById("cuerpoTablaReporte");
+  const avisoReporte = document.getElementById("avisoReporte");
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+
+  const hoy = new Date();
+  const haceUnMes = new Date();
+  haceUnMes.setDate(hoy.getDate() - 30);
+  const enUnMes = new Date();
+  enUnMes.setDate(hoy.getDate() + 30);
+
+  if (inputDesde && !inputDesde.value) {
+    inputDesde.value = haceUnMes.toISOString().split("T")[0];
+  }
+  if (inputHasta && !inputHasta.value) {
+    inputHasta.value = enUnMes.toISOString().split("T")[0];
+  }
+
+  if (inputDesde && inputHasta) {
+    inputHasta.min = inputDesde.value;
+    inputDesde.addEventListener("change", () => {
+      inputHasta.min = inputDesde.value;
+    });
+  }
+
+  async function generarReporte(desde, hasta) {
+    let datosReporte = null;
+
+    try {
+      const res = await fetch("/reporte-desempeno/generar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
+        },
+        body: JSON.stringify({ desde, hasta })
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          datosReporte = {
+            metricas: json.metricas,
+            pedidos: json.pedidos
+          };
+        }
+      }
+    } catch (err) {
+      // Respaldo local si el backend está apagado
+    }
+
+    if (!datosReporte && typeof Bochito !== "undefined" && Bochito.getReporteDesempeno) {
+      datosReporte = Bochito.getReporteDesempeno(desde, hasta);
+    }
+
+    if (!datosReporte) return;
+
+    actualizarKPIs(datosReporte.metricas);
+    actualizarTabla(datosReporte.pedidos);
+
+    if (avisoReporte) {
+      avisoReporte.textContent = `Reporte generado exitosamente para el periodo ${desde} al ${hasta}. Total evaluado: ${datosReporte.metricas.total} pedidos.`;
+      avisoReporte.className = "alert alert-success mt-3 mb-0 shadow-sm";
+      avisoReporte.classList.remove("d-none");
+    }
+  }
+
+  function actualizarKPIs(metricas) {
+    const aTiempo = metricas.entregados_a_tiempo || 0;
+    const retrasados = metricas.retrasados || 0;
+    const cancelados = metricas.cancelados || 0;
+    const total = metricas.total ?? (aTiempo + retrasados + cancelados);
+    const efectividad = metricas.porcentaje_efectividad ?? (total > 0 ? ((aTiempo / total) * 100).toFixed(1) : "0.0");
+
+    if (kpiATiempo) kpiATiempo.textContent = aTiempo.toLocaleString();
+    if (kpiRetrasados) kpiRetrasados.textContent = retrasados.toLocaleString();
+    if (kpiCancelados) kpiCancelados.textContent = cancelados.toLocaleString();
+    if (kpiTotal) kpiTotal.textContent = total.toLocaleString();
+    if (kpiEfectividad) kpiEfectividad.textContent = `${efectividad}%`;
+
+    const pATiempo = total > 0 ? ((aTiempo / total) * 100).toFixed(1) : 0;
+    const pRetrasados = total > 0 ? ((retrasados / total) * 100).toFixed(1) : 0;
+    const pCancelados = total > 0 ? ((cancelados / total) * 100).toFixed(1) : 0;
+
+    if (barATiempo) {
+      barATiempo.style.width = `${pATiempo}%`;
+      barATiempo.textContent = `${pATiempo}%`;
+    }
+    if (barRetrasados) {
+      barRetrasados.style.width = `${pRetrasados}%`;
+      barRetrasados.textContent = `${pRetrasados}%`;
+    }
+    if (barCancelados) {
+      barCancelados.style.width = `${pCancelados}%`;
+      barCancelados.textContent = `${pCancelados}%`;
+    }
+  }
+
+  function actualizarTabla(pedidos) {
+    if (!cuerpoTablaReporte) return;
+    cuerpoTablaReporte.innerHTML = "";
+
+    if (!pedidos || pedidos.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td colspan="7" class="text-center text-muted py-4">
+          <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
+          No hay pedidos registrados en el rango de fechas seleccionado.
+        </td>
+      `;
+      cuerpoTablaReporte.appendChild(tr);
+      return;
+    }
+
+    const colores = (typeof Bochito !== "undefined" && Bochito.COLOR_ESTATUS) ? Bochito.COLOR_ESTATUS : {};
+
+    pedidos.forEach((p) => {
+      const tr = document.createElement("tr");
+
+      let badgeDesempeno = "";
+      if (p.desempeno === "a_tiempo" || p.estatus === "Entregado a tiempo") {
+        badgeDesempeno = '<span class="badge text-bg-success"><i class="bi bi-check-circle-fill me-1"></i> A tiempo</span>';
+      } else if (p.desempeno === "retrasado" || p.estatus === "Retrasado") {
+        badgeDesempeno = '<span class="badge text-bg-warning text-dark"><i class="bi bi-clock-fill me-1"></i> Retrasado</span>';
+      } else if (p.desempeno === "cancelado" || p.estatus === "Cancelado") {
+        badgeDesempeno = '<span class="badge text-bg-danger"><i class="bi bi-x-circle-fill me-1"></i> Cancelado</span>';
+      } else {
+        badgeDesempeno = '<span class="badge text-bg-info text-white"><i class="bi bi-hourglass-split me-1"></i> En proceso</span>';
+      }
+
+      const estLabel = (typeof Bochito !== "undefined" && Bochito.formatoFecha)
+        ? Bochito.formatoFecha(p.entrega || p.entrega_estimada)
+        : (p.entrega || p.entrega_estimada || "—");
+
+      const realLabel = (typeof Bochito !== "undefined" && Bochito.formatoFecha)
+        ? Bochito.formatoFecha(p.entregaReal || p.entrega_real)
+        : (p.entregaReal || p.entrega_real || "—");
+
+      tr.innerHTML = `
+        <td><strong class="text-bochito">${p.po}</strong></td>
+        <td>${p.cliente}</td>
+        <td>${p.producto} <small class="text-muted">(${p.cantidad})</small></td>
+        <td><small>${estLabel}</small></td>
+        <td><small class="text-muted">${realLabel}</small></td>
+        <td><span class="badge text-bg-${colores[p.estatus] || 'secondary'}">${p.estatus}</span></td>
+        <td>${badgeDesempeno}</td>
+      `;
+      cuerpoTablaReporte.appendChild(tr);
+    });
+  }
+
+  if (formReporte) {
+    formReporte.addEventListener("submit", (e) => {
+      e.preventDefault();
+      formReporte.classList.add("was-validated");
+      if (!formReporte.checkValidity()) return;
+
+      generarReporte(inputDesde.value, inputHasta.value);
+    });
+  }
+
+  document.querySelectorAll("[data-preset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const preset = btn.dataset.preset;
+      const base = new Date();
+      let fInicio = new Date();
+      let fFin = new Date();
+
+      if (preset === "7d") {
+        fInicio.setDate(base.getDate() - 7);
+        fFin.setDate(base.getDate() + 7);
+      } else if (preset === "30d") {
+        fInicio.setDate(base.getDate() - 30);
+        fFin.setDate(base.getDate() + 30);
+      } else if (preset === "year") {
+        fInicio = new Date(base.getFullYear(), 0, 1);
+        fFin = new Date(base.getFullYear(), 11, 31);
+      } else if (preset === "all") {
+        fInicio = new Date("2020-01-01");
+        fFin = new Date("2030-12-31");
+      }
+
+      inputDesde.value = fInicio.toISOString().split("T")[0];
+      inputHasta.value = fFin.toISOString().split("T")[0];
+
+      document.querySelectorAll("[data-preset]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      generarReporte(inputDesde.value, inputHasta.value);
+    });
+  });
+});

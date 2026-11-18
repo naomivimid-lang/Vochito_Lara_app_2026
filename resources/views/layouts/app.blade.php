@@ -3,12 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>@yield('title') - Bochito Envíos y Ventas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="{{ asset('css/estilos.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/utilidades.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/tema.css') }}" />
+    @stack('styles')
     <script src="{{ asset('js/tema.js') }}"></script>
   </head>
   <body class="d-flex flex-column min-vh-100">
@@ -32,7 +34,7 @@
             <li class="nav-item"><a @class(['nav-link', 'active' => request()->routeIs('vochito.catalogo')]) href="{{ route('vochito.catalogo') }}"><i class="fa-solid fa-basket-shopping"></i> Catálogo</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ route('vochito.busquedas') }}"><i class="fa-solid fa-magnifying-glass"></i> Búsquedas</a></li>
             <li class="nav-item dropdown">
-              <a @class(['nav-link', 'dropdown-toggle', 'active' => request()->routeIs('pedidos.*', 'productos.*')]) href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
+              <a @class(['nav-link', 'dropdown-toggle', 'active' => request()->routeIs('pedidos.*', 'productos.*', 'solicitudes.*', 'reportes.*', 'vochito.cancelacion', 'vochito.modificacion', 'vochito.reporte_desempeno')]) href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-clipboard-list"></i> Pedidos</a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a @class(['dropdown-item', 'active' => request()->routeIs('pedidos.create')]) href="{{ route('pedidos.create') }}"><i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido</a></li>
                 <li><a @class(['dropdown-item', 'active' => request()->routeIs('pedidos.index', 'pedidos.edit')]) href="{{ route('pedidos.index') }}"><i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda</a></li>
@@ -42,9 +44,9 @@
                 <li><hr class="dropdown-divider" /></li>
                 <li><a class="dropdown-item" href="{{ route('vochito.incidencias') }}"><i class="fa-solid fa-triangle-exclamation fa-fw"></i> Registrar incidencia</a></li>
                 <li><a class="dropdown-item" href="{{ route('vochito.evidencias') }}"><i class="fa-solid fa-camera fa-fw"></i> Evidencia de entrega</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.cancelacion') }}"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.modificacion') }}"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
-                <li><a class="dropdown-item" href="{{ route('vochito.reporte_desempeno') }}"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
+                <li><a @class(['dropdown-item', 'active' => request()->routeIs('vochito.cancelacion', 'solicitudes.cancelacion')]) href="{{ route('vochito.cancelacion') }}"><i class="fa-solid fa-ban fa-fw"></i> Cancelar pedido</a></li>
+                <li><a @class(['dropdown-item', 'active' => request()->routeIs('vochito.modificacion', 'solicitudes.modificacion')]) href="{{ route('vochito.modificacion') }}"><i class="fa-solid fa-pen-to-square fa-fw"></i> Modificar pedido</a></li>
+                <li><a @class(['dropdown-item', 'active' => request()->routeIs('vochito.reporte_desempeno', 'reportes.*')]) href="{{ route('vochito.reporte_desempeno') }}"><i class="fa-solid fa-chart-column fa-fw"></i> Reporte de desempeño</a></li>
               </ul>
             </li>
             <li class="nav-item"><a class="nav-link" href="{{ route('vochito.contacto') }}"><i class="fa-solid fa-envelope"></i> Contacto</a></li>
@@ -62,7 +64,7 @@
       </header>
     @endif
 
-    <main class="container my-5">
+    <main class="container my-5 flex-grow-1">
       @include('partials.flash')
       @yield('content')
     </main>
@@ -79,12 +81,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      // Formularios con data-confirm piden confirmación antes de enviarse (eliminar, cancelar).
-      document.addEventListener('submit', (e) => {
-        const mensaje = e.target.dataset.confirm;
-        if (mensaje && !confirm(mensaje)) e.preventDefault();
-      });
-    </script>
+    @stack('scripts')
   </body>
 </html>
