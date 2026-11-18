@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -6,28 +7,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('evidencias', function (Blueprint $table) {
             $table->id();
-            $table->string('po');
-            $table->string('recibe');
+            $table->string('orden_compra', 20);
+            $table->string('recibe', 150);
             $table->dateTime('fecha_entrega');
-            $table->string('foto_path')->nullable();
+            $table->string('foto');
             $table->text('comentarios')->nullable();
             $table->timestamps();
-
-            $table->index('po');
-            $table->foreign('po')->references('po')->on('pedidos')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('evidencias');

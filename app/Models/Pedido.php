@@ -2,74 +2,55 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Pedido extends Model
 {
-    use HasFactory;
-
-    protected $table = 'pedidos';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'po',
-        'cliente',
-        'producto',
-        'cantidad',
-        'entrega_estimada',
-        'entrega_real',
-        'estatus',
-        'desempeno',
+    public const ESTATUS = [
+        'Orden recibida', 'En fabricación', 'Control de calidad', 'Empaquetado', 'En tránsito',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    // Color del badge de Bootstrap por estatus (mismo mapa que js/datos.js)
+    public const COLOR_ESTATUS = [
+        'Orden recibida' => 'secondary',
+        'En fabricación' => 'warning',
+        'Control de calidad' => 'info',
+        'Empaquetado' => 'primary',
+        'En tránsito' => 'success',
+        'Cancelado' => 'danger',
+    ];
+
+    protected $fillable = ['cliente', 'producto_id', 'cantidad', 'entrega', 'estatus'];
+
+    protected $casts = [
+        'entrega' => 'datetime',
+    ];
+
+    public function producto()
     {
-        return [
-            'entrega_estimada' => 'datetime',
-            'entrega_real' => 'datetime',
-            'cantidad' => 'integer',
-        ];
+        return $this->belongsTo(Producto::class);
     }
 
     /**
-     * Relación con las solicitudes asociadas a esta orden.
+     * Solicitudes de cancelación o modificación asociadas al pedido.
      */
     public function solicitudes()
     {
-        return $this->hasMany(Solicitud::class, 'po', 'po');
+        return $this->hasMany(Solicitud::class, 'pedido_id');
     }
 
     /**
-     * Relación con las incidencias reportadas para esta orden.
+     * Resuelve el número de PO en formato corto o completo hacia un Pedido existente.
      */
-    public function incidencias()
+    public static function buscarPorPo(string $po): ?self
     {
-        return $this->hasMany(Incidencia::class, 'po', 'po');
-    }
+        if (preg_match('/(\d{1,6})$/', trim($po), $matches)) {
+            $id = (int) $matches[1];
+            if ($id > 0) {
+                return self::find($id);
+            }
+        }
 
-    /**
-     * Relación con las evidencias de entrega registradas.
-     */
-    public function evidencias()
-    {
-        return $this->hasMany(Evidencia::class, 'po', 'po');
-    }
-
-    /**
-     * Relación con la última evidencia de entrega.
-     */
-    public function evidencia()
-    {
-        return $this->hasOne(Evidencia::class, 'po', 'po')->latestOfMany();
+        return null;
     }
 }

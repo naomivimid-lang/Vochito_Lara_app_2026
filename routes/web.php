@@ -1,73 +1,64 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PedidoController;
-use App\Http\Controllers\SolicitudController;
-use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\EvidenciaController;
+use App\Http\Controllers\IncidenciaController;
+use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ReporteController;
-use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\SolicitudController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes - Vochito Laravel
-|--------------------------------------------------------------------------
-| Rutas RESTful organizadas mediante Route::resource() y rutas complementarias.
-*/
+// CRUD de Productos y Pedidos
+Route::resource('productos', ProductoController::class)->except('show');
+Route::resource('pedidos', PedidoController::class)->except('show');
+Route::patch('pedidos/{pedido}/estatus', [PedidoController::class, 'actualizarEstatus'])->name('pedidos.estatus');
 
-// Página de inicio
-Route::get('/', function () {
-    return view('vochito.inicio');
-})->name('vochito.inicio');
-
-// ==========================================
-// RUTAS RESTful (Route::resource)
-// ==========================================
-
-// 1. Pedidos (CRUD RESTful completo)
-Route::resource('pedidos', PedidoController::class);
-Route::get('/pedidos-legacy', function () {
-    return redirect()->route('pedidos.index');
-})->name('vochito.pedidos');
-
-// 2. Solicitudes (Cancelaciones y Modificaciones)
+// CRUD RESTful de Solicitudes (Cancelaciones y Modificaciones)
 Route::resource('solicitudes', SolicitudController::class);
 Route::patch('/solicitudes/{id}/estado', [SolicitudController::class, 'updateEstado'])->name('vochito.solicitudes.estado');
 
-// Rutas de conveniencia para vistas específicas de solicitudes
-Route::get('/cancelacion', [SolicitudController::class, 'cancelacionView'])->name('solicitudes.cancelacion');
-Route::get('/cancelacion-alias', function() { return redirect()->route('solicitudes.cancelacion'); })->name('vochito.cancelacion');
-
-Route::get('/modificacion', [SolicitudController::class, 'modificacionView'])->name('solicitudes.modificacion');
-Route::get('/modificacion-alias', function() { return redirect()->route('solicitudes.modificacion'); })->name('vochito.modificacion');
-
-// 3. Incidencias
-Route::resource('incidencias', IncidenciaController::class);
-Route::get('/incidencias-alias', function() { return redirect()->route('incidencias.create'); })->name('vochito.incidencias');
-
-// 4. Evidencias de entrega
-Route::resource('evidencias', EvidenciaController::class);
-Route::get('/evidencias-alias', function() { return redirect()->route('evidencias.create'); })->name('vochito.evidencias');
-
-// 5. Reporte de Desempeño
+// Reporte de Desempeño
 Route::resource('reportes', ReporteController::class)->only(['index', 'store']);
 Route::get('/reporte-desempeno', [ReporteController::class, 'index'])->name('vochito.reporte_desempeno');
 Route::post('/reporte-desempeno/generar', [ReporteController::class, 'generar'])->name('vochito.reporte.generar');
 
-// 6. Contacto
-Route::get('/contacto', [ContactoController::class, 'create'])->name('vochito.contacto');
-Route::post('/contacto', [ContactoController::class, 'store'])->name('contacto.store');
+// Página principal
+Route::get('/', function () {
+    return view('vochito.inicio');
+})->name('vochito.inicio');
 
-// ==========================================
-// Vistas informativas y complementarias
-// ==========================================
+// Páginas de Vochito
 Route::view('/nosotros', 'vochito.nosotros')->name('vochito.nosotros');
 Route::view('/servicios', 'vochito.servicios')->name('vochito.servicios');
-Route::view('/catalogo', 'vochito.catalogo')->name('vochito.catalogo');
+Route::get('/catalogo', [ProductoController::class, 'catalogo'])->name('vochito.catalogo');
 Route::view('/busquedas', 'vochito.busquedas')->name('vochito.busquedas');
-Route::view('/productos', 'vochito.productos')->name('vochito.productos');
 Route::view('/historial', 'vochito.historial')->name('vochito.historial');
-Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
+
+// CRUD de Notificaciones
+Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('vochito.notificaciones');
+Route::post('/notificaciones', [NotificacionController::class, 'store'])->name('notificaciones.store');
+Route::put('/notificaciones/{id}', [NotificacionController::class, 'update'])->name('notificaciones.update');
+Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
+
+// CRUD de Incidencias
+Route::get('/incidencias', [IncidenciaController::class, 'index'])->name('vochito.incidencias');
+Route::post('/incidencias', [IncidenciaController::class, 'store'])->name('incidencias.store');
+Route::put('/incidencias/{id}', [IncidenciaController::class, 'update'])->name('incidencias.update');
+Route::delete('/incidencias/{id}', [IncidenciaController::class, 'destroy'])->name('incidencias.destroy');
+
+// CRUD de Evidencias
+Route::get('/evidencias', [EvidenciaController::class, 'index'])->name('vochito.evidencias');
+Route::post('/evidencias', [EvidenciaController::class, 'store'])->name('evidencias.store');
+Route::put('/evidencias/{id}', [EvidenciaController::class, 'update'])->name('evidencias.update');
+Route::delete('/evidencias/{id}', [EvidenciaController::class, 'destroy'])->name('evidencias.destroy');
+
+// Vistas de Cancelación y Modificación conectadas a SolicitudController
+Route::get('/cancelacion', [SolicitudController::class, 'cancelacionView'])->name('vochito.cancelacion');
+Route::get('/modificacion', [SolicitudController::class, 'modificacionView'])->name('vochito.modificacion');
+
+// Otras páginas
+Route::view('/contacto', 'vochito.contacto')->name('vochito.contacto');
 Route::view('/ayuda', 'vochito.ayuda')->name('vochito.ayuda');
 Route::view('/privacidad', 'vochito.privacidad')->name('vochito.privacidad');
 Route::view('/requerimientos', 'vochito.rnf')->name('vochito.rnf');

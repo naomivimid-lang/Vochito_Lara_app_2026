@@ -39,8 +39,8 @@
             id="po"
             name="po"
             class="form-control text-uppercase @error('po') is-invalid @enderror"
-            placeholder="Ej. PO-2026-0001"
-            pattern="[Pp][Oo]-[0-9]{4}-[0-9]{4}"
+            placeholder="Ej. PO-2026-0001 o PO-0001"
+            pattern="[Pp][Oo]-([0-9]{4}-)?[0-9]{4}"
             value="{{ old('po') }}"
             required
         />
@@ -48,7 +48,7 @@
         @error('po')
             <div class="invalid-feedback">{{ $message }}</div>
         @else
-            <div class="invalid-feedback">Escribe la orden de compra con el formato PO-2026-0001.</div>
+            <div class="invalid-feedback">Escribe la orden de compra con el formato PO-2026-0001 o PO-0001.</div>
         @enderror
     </div>
 

@@ -11,12 +11,23 @@ class Solicitud extends Model
 
     protected $table = 'solicitudes';
 
+    public const TIPOS = ['cancelacion', 'modificacion'];
+
+    public const ESTADOS = ['Pendiente', 'Aprobada', 'Rechazada'];
+
+    public const COLOR_ESTADOS = [
+        'Pendiente' => 'warning',
+        'Aprobada' => 'success',
+        'Rechazada' => 'danger',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
+        'pedido_id',
         'tipo',
         'po',
         'email',
@@ -40,10 +51,10 @@ class Solicitud extends Model
     }
 
     /**
-     * Relación con el pedido correspondiente si existe.
+     * Relación con el pedido correspondiente si existe en base de datos.
      */
     public function pedido()
     {
-        return $this->belongsTo(Pedido::class, 'po', 'po');
+        return $this->belongsTo(Pedido::class, 'pedido_id');
     }
 }

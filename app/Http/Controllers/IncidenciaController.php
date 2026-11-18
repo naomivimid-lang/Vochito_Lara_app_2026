@@ -2,113 +2,76 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreIncidenciaRequest;
 use App\Models\Incidencia;
-use App\Models\Pedido;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 
 class IncidenciaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    // Mostrar todas las incidencias
+    public function index()
     {
-        $incidencias = [];
-        if (Schema::hasTable('incidencias')) {
-            $query = Incidencia::with('pedido');
-
-            if ($request->filled('po')) {
-                $query->where('po', 'LIKE', '%' . strtoupper(trim($request->query('po'))) . '%');
-            }
-
-            $incidencias = $query->orderBy('created_at', 'desc')->get();
-        }
-
-        if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'incidencias' => $incidencias]);
-        }
+        $incidencias = Incidencia::latest()->get();
 
         return view('vochito.incidencias', compact('incidencias'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Registrar una incidencia
+    public function store(Request $request)
     {
-        return view('vochito.incidencias');
+        $datos = $request->validate([
+            'orden_compra' => [
+                'required',
+                'regex:/^[Pp][Oo]-[0-9]{4}-[0-9]{4}$/'
+            ],
+            'tipo_incidencia' => [
+                'required',
+                'in:Retraso,Falla de maquinaria,Falta de materia prima'
+            ],
+            'causa' => 'required|string|min:5',
+            'nueva_fecha_estimada' => 'required|date|after:now',
+        ]);
+
+        Incidencia::create($datos);
+
+        return redirect()
+            ->route('vochito.incidencias')
+            ->with('success', 'Incidencia registrada correctamente.');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreIncidenciaRequest $request)
+    // Actualizar una incidencia
+    public function update(Request $request, $id)
     {
-        $validated = $request->validated();
-        $po = strtoupper(trim($validated['idPedido']));
+        $incidencia = Incidencia::findOrFail($id);
 
-        if (Schema::hasTable('incidencias')) {
-            $incidencia = Incidencia::create([
-                'po' => $po,
-                'tipo_incidencia' => $validated['tipoIncidencia'],
-                'causa' => $validated['causa'],
-                'nueva_fecha_estimada' => $validated['nuevaFecha'],
-                'estatus' => 'Abierta',
-            ]);
+        $datos = $request->validate([
+            'orden_compra' => [
+                'required',
+                'regex:/^[Pp][Oo]-[0-9]{4}-[0-9]{4}$/'
+            ],
+            'tipo_incidencia' => [
+                'required',
+                'in:Retraso,Falla de maquinaria,Falta de materia prima'
+            ],
+            'causa' => 'required|string|min:5',
+            'nueva_fecha_estimada' => 'required|date|after:now',
+        ]);
 
-            // Si hay pedido asociado, actualizar la entrega estimada y marcar como potencialmente retrasado
-            if (Schema::hasTable('pedidos')) {
-                $pedido = Pedido::where('po', $po)->first();
-                if ($pedido) {
-                    $pedido->entrega_estimada = $validated['nuevaFecha'];
-                    $pedido->desempeno = 'retrasado';
-                    $pedido->save();
-                }
-            }
+        $incidencia->update($datos);
 
-            $mensaje = "Incidencia para la orden {$po} registrada. Se notificará al cliente la nueva fecha estimada.";
-
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $mensaje,
-                    'incidencia' => $incidencia,
-                ], 201);
-            }
-
-            return redirect()->route('incidencias.create')->with('success', $mensaje);
-        }
-
-        return redirect()->route('incidencias.create')->with('success', "Incidencia registrada correctamente para la orden {$po}.");
+        return redirect()
+            ->route('vochito.incidencias')
+            ->with('success', 'Incidencia actualizada correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Eliminar una incidencia
+    public function destroy($id)
     {
-        $incidencia = Incidencia::with('pedido')->findOrFail($id);
-        return response()->json(['success' => true, 'incidencia' => $incidencia]);
-    }
+        $incidencia = Incidencia::findOrFail($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Request $request, string $id)
-    {
-        if (Schema::hasTable('incidencias')) {
-            $incidencia = Incidencia::findOrFail($id);
-            $incidencia->delete();
+        $incidencia->delete();
 
-            if ($request->wantsJson()) {
-                return response()->json(['success' => true, 'message' => 'Incidencia eliminada.']);
-            }
-
-            return back()->with('success', 'Incidencia eliminada correctamente.');
-        }
-
-        return back()->with('success', 'Incidencia eliminada.');
+        return redirect()
+            ->route('vochito.incidencias')
+            ->with('success', 'Incidencia eliminada correctamente.');
     }
 }

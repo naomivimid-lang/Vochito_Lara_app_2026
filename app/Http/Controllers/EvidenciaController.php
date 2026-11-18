@@ -2,101 +2,85 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreEvidenciaRequest;
 use App\Models\Evidencia;
-use App\Models\Pedido;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class EvidenciaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    // Mostrar todas las evidencias
+    public function index()
     {
-        $evidencias = [];
-        if (Schema::hasTable('evidencias')) {
-            $evidencias = Evidencia::with('pedido')->orderBy('created_at', 'desc')->get();
-        }
-
-        if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'evidencias' => $evidencias]);
-        }
+        $evidencias = Evidencia::latest()->get();
 
         return view('vochito.evidencias', compact('evidencias'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Registrar evidencia
+    public function store(Request $request)
     {
-        return view('vochito.evidencias');
+        $request->validate([
+            'orden_compra' => ['required', 'regex:/^[Pp][Oo]-[0-9]{4}-[0-9]{4}$/'],
+            'recibe' => 'required|string|min:3|max:150',
+            'fecha_entrega' => 'required|date',
+            'foto' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'comentarios' => 'nullable|string|max:1000',
+        ]);
+
+        $rutaFoto = $request->file('foto')->store('evidencias', 'public');
+
+        Evidencia::create([
+            'orden_compra' => strtoupper($request->orden_compra),
+            'recibe' => $request->recibe,
+            'fecha_entrega' => $request->fecha_entrega,
+            'foto' => $rutaFoto,
+            'comentarios' => $request->comentarios,
+        ]);
+
+        return redirect()->route('vochito.evidencias')
+            ->with('success', 'Evidencia registrada correctamente.');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreEvidenciaRequest $request)
+    // Actualizar evidencia
+    public function update(Request $request, $id)
     {
-        $validated = $request->validated();
-        $po = strtoupper(trim($validated['idPedidoEvidencia']));
+        $evidencia = Evidencia::findOrFail($id);
 
-        $fotoPath = null;
-        if ($request->hasFile('fotoEntrega')) {
-            $fotoPath = $request->file('fotoEntrega')->store('evidencias', 'public');
+        $request->validate([
+            'orden_compra' => ['required', 'regex:/^[Pp][Oo]-[0-9]{4}-[0-9]{4}$/'],
+            'recibe' => 'required|string|min:3|max:150',
+            'fecha_entrega' => 'required|date',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'comentarios' => 'nullable|string|max:1000',
+        ]);
+
+        if ($request->hasFile('foto')) {
+            Storage::disk('public')->delete($evidencia->foto);
+
+            $rutaFoto = $request->file('foto')->store('evidencias', 'public');
+            $evidencia->foto = $rutaFoto;
         }
 
-        if (Schema::hasTable('evidencias')) {
-            $evidencia = Evidencia::create([
-                'po' => $po,
-                'recibe' => $validated['recibe'],
-                'fecha_entrega' => $validated['fechaEntrega'],
-                'foto_path' => $fotoPath,
-                'comentarios' => $validated['comentarios'] ?? null,
-            ]);
+        $evidencia->orden_compra = strtoupper($request->orden_compra);
+        $evidencia->recibe = $request->recibe;
+        $evidencia->fecha_entrega = $request->fecha_entrega;
+        $evidencia->comentarios = $request->comentarios;
 
-            // Actualizar estatus y entrega real del pedido
-            if (Schema::hasTable('pedidos')) {
-                $pedido = Pedido::where('po', $po)->first();
-                if ($pedido) {
-                    $pedido->entrega_real = $validated['fechaEntrega'];
-                    $pedido->estatus = 'Entregado a tiempo';
+        $evidencia->save();
 
-                    // Comparar si fue a tiempo o retrasado
-                    if ($pedido->entrega_estimada && $pedido->entrega_real > $pedido->entrega_estimada) {
-                        $pedido->desempeno = 'retrasado';
-                        $pedido->estatus = 'Retrasado';
-                    } else {
-                        $pedido->desempeno = 'a_tiempo';
-                    }
-                    $pedido->save();
-                }
-            }
-
-            $mensaje = "Evidencia registrada en el expediente de la orden {$po}.";
-
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $mensaje,
-                    'evidencia' => $evidencia,
-                ], 201);
-            }
-
-            return redirect()->route('evidencias.create')->with('success', $mensaje);
-        }
-
-        return redirect()->route('evidencias.create')->with('success', "Evidencia registrada en el expediente del pedido {$po}.");
+        return redirect()->route('vochito.evidencias')
+            ->with('success', 'Evidencia actualizada correctamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // Eliminar evidencia
+    public function destroy($id)
     {
-        $evidencia = Evidencia::with('pedido')->findOrFail($id);
-        return response()->json(['success' => true, 'evidencia' => $evidencia]);
+        $evidencia = Evidencia::findOrFail($id);
+
+        Storage::disk('public')->delete($evidencia->foto);
+        $evidencia->delete();
+
+        return redirect()->route('vochito.evidencias')
+            ->with('success', 'Evidencia eliminada correctamente.');
     }
 }

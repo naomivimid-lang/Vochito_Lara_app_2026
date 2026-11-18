@@ -7,51 +7,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputDesde = document.getElementById("rep-desde");
   const inputHasta = document.getElementById("rep-hasta");
 
-  // Elementos KPI
   const kpiATiempo = document.getElementById("kpiATiempo");
   const kpiRetrasados = document.getElementById("kpiRetrasados");
   const kpiCancelados = document.getElementById("kpiCancelados");
   const kpiTotal = document.getElementById("kpiTotal");
   const kpiEfectividad = document.getElementById("kpiEfectividad");
 
-  // Barras de progreso visual
   const barATiempo = document.getElementById("barATiempo");
   const barRetrasados = document.getElementById("barRetrasados");
   const barCancelados = document.getElementById("barCancelados");
 
-  // Tabla de desglose de pedidos
   const cuerpoTablaReporte = document.getElementById("cuerpoTablaReporte");
   const avisoReporte = document.getElementById("avisoReporte");
-
-  // Token CSRF de Laravel
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
 
-  // Establecer fechas por defecto si están vacías (últimos 30 días)
   const hoy = new Date();
   const haceUnMes = new Date();
   haceUnMes.setDate(hoy.getDate() - 30);
+  const enUnMes = new Date();
+  enUnMes.setDate(hoy.getDate() + 30);
 
   if (inputDesde && !inputDesde.value) {
     inputDesde.value = haceUnMes.toISOString().split("T")[0];
   }
   if (inputHasta && !inputHasta.value) {
-    inputHasta.value = hoy.toISOString().split("T")[0];
+    inputHasta.value = enUnMes.toISOString().split("T")[0];
   }
 
-  // Validación: "hasta" no puede ser menor a "desde"
   if (inputDesde && inputHasta) {
+    inputHasta.min = inputDesde.value;
     inputDesde.addEventListener("change", () => {
       inputHasta.min = inputDesde.value;
     });
   }
 
-  /**
-   * Genera y actualiza la vista con el reporte del rango seleccionado
-   */
   async function generarReporte(desde, hasta) {
     let datosReporte = null;
 
-    // 1. Intentar consultar el backend de Laravel
     try {
       const res = await fetch("/reporte-desempeno/generar", {
         method: "POST",
@@ -73,13 +65,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     } catch (err) {
-      // Backend no disponible: calcular con datos locales
+      // Respaldo local si el backend está apagado
     }
 
-    // 2. Fallback con cálculo local usando Bochito
-    if (!datosReporte) {
+    if (!datosReporte && typeof Bochito !== "undefined" && Bochito.getReporteDesempeno) {
       datosReporte = Bochito.getReporteDesempeno(desde, hasta);
     }
+
+    if (!datosReporte) return;
 
     actualizarKPIs(datosReporte.metricas);
     actualizarTabla(datosReporte.pedidos);
@@ -95,8 +88,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const aTiempo = metricas.entregados_a_tiempo || 0;
     const retrasados = metricas.retrasados || 0;
     const cancelados = metricas.cancelados || 0;
-    const total = metricas.total || (aTiempo + retrasados + cancelados);
-    const efectividad = metricas.porcentaje_efectividad || (total > 0 ? ((aTiempo / total) * 100).toFixed(1) : "0.0");
+    const total = metricas.total ?? (aTiempo + retrasados + cancelados);
+    const efectividad = metricas.porcentaje_efectividad ?? (total > 0 ? ((aTiempo / total) * 100).toFixed(1) : "0.0");
 
     if (kpiATiempo) kpiATiempo.textContent = aTiempo.toLocaleString();
     if (kpiRetrasados) kpiRetrasados.textContent = retrasados.toLocaleString();
@@ -104,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (kpiTotal) kpiTotal.textContent = total.toLocaleString();
     if (kpiEfectividad) kpiEfectividad.textContent = `${efectividad}%`;
 
-    // Actualizar barras de porcentaje
     const pATiempo = total > 0 ? ((aTiempo / total) * 100).toFixed(1) : 0;
     const pRetrasados = total > 0 ? ((retrasados / total) * 100).toFixed(1) : 0;
     const pCancelados = total > 0 ? ((cancelados / total) * 100).toFixed(1) : 0;
@@ -139,6 +131,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const colores = (typeof Bochito !== "undefined" && Bochito.COLOR_ESTATUS) ? Bochito.COLOR_ESTATUS : {};
+
     pedidos.forEach((p) => {
       const tr = document.createElement("tr");
 
@@ -153,62 +147,65 @@ document.addEventListener("DOMContentLoaded", () => {
         badgeDesempeno = '<span class="badge text-bg-info text-white"><i class="bi bi-hourglass-split me-1"></i> En proceso</span>';
       }
 
+      const estLabel = (typeof Bochito !== "undefined" && Bochito.formatoFecha)
+        ? Bochito.formatoFecha(p.entrega || p.entrega_estimada)
+        : (p.entrega || p.entrega_estimada || "—");
+
+      const realLabel = (typeof Bochito !== "undefined" && Bochito.formatoFecha)
+        ? Bochito.formatoFecha(p.entregaReal || p.entrega_real)
+        : (p.entregaReal || p.entrega_real || "—");
+
       tr.innerHTML = `
         <td><strong class="text-bochito">${p.po}</strong></td>
         <td>${p.cliente}</td>
         <td>${p.producto} <small class="text-muted">(${p.cantidad})</small></td>
-        <td><small>${Bochito.formatoFecha(p.entrega || p.entrega_estimada)}</small></td>
-        <td><small class="text-muted">${Bochito.formatoFecha(p.entregaReal || p.entrega_real)}</small></td>
-        <td><span class="badge text-bg-${Bochito.COLOR_ESTATUS[p.estatus] || 'secondary'}">${p.estatus}</span></td>
+        <td><small>${estLabel}</small></td>
+        <td><small class="text-muted">${realLabel}</small></td>
+        <td><span class="badge text-bg-${colores[p.estatus] || 'secondary'}">${p.estatus}</span></td>
         <td>${badgeDesempeno}</td>
       `;
       cuerpoTablaReporte.appendChild(tr);
     });
   }
 
-  // Evento submit del formulario de fechas
   if (formReporte) {
     formReporte.addEventListener("submit", (e) => {
       e.preventDefault();
       formReporte.classList.add("was-validated");
       if (!formReporte.checkValidity()) return;
 
-      const desde = inputDesde.value;
-      const hasta = inputHasta.value;
-      generarReporte(desde, hasta);
+      generarReporte(inputDesde.value, inputHasta.value);
     });
   }
 
-  // Botones de filtro rápido / atajos
   document.querySelectorAll("[data-preset]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const preset = btn.dataset.preset;
-      const hoy = new Date();
+      const base = new Date();
       let fInicio = new Date();
+      let fFin = new Date();
 
       if (preset === "7d") {
-        fInicio.setDate(hoy.getDate() - 7);
+        fInicio.setDate(base.getDate() - 7);
+        fFin.setDate(base.getDate() + 7);
       } else if (preset === "30d") {
-        fInicio.setDate(hoy.getDate() - 30);
+        fInicio.setDate(base.getDate() - 30);
+        fFin.setDate(base.getDate() + 30);
       } else if (preset === "year") {
-        fInicio = new Date(hoy.getFullYear(), 0, 1);
+        fInicio = new Date(base.getFullYear(), 0, 1);
+        fFin = new Date(base.getFullYear(), 11, 31);
       } else if (preset === "all") {
         fInicio = new Date("2020-01-01");
+        fFin = new Date("2030-12-31");
       }
 
       inputDesde.value = fInicio.toISOString().split("T")[0];
-      inputHasta.value = hoy.toISOString().split("T")[0];
+      inputHasta.value = fFin.toISOString().split("T")[0];
 
-      // Marcar botón activo
       document.querySelectorAll("[data-preset]").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
       generarReporte(inputDesde.value, inputHasta.value);
     });
   });
-
-  // Generar reporte inicial
-  if (inputDesde && inputHasta) {
-    generarReporte(inputDesde.value, inputHasta.value);
-  }
 });

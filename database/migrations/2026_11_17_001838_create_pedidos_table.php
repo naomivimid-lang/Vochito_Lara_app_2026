@@ -13,14 +13,11 @@ return new class extends Migration
     {
         Schema::create('pedidos', function (Blueprint $table) {
             $table->id();
-            $table->string('po')->unique();
-            $table->string('cliente');
-            $table->string('producto');
-            $table->integer('cantidad');
-            $table->dateTime('entrega_estimada');
-            $table->dateTime('entrega_real')->nullable();
-            $table->string('estatus')->default('Orden recibida');
-            $table->string('desempeno')->default('pendiente'); // 'a_tiempo', 'retrasado', 'cancelado', 'pendiente'
+            $table->string('cliente', 120);
+            $table->foreignId('producto_id')->constrained()->restrictOnDelete();
+            $table->unsignedInteger('cantidad');
+            $table->dateTime('entrega');
+            $table->string('estatus', 30)->default('Orden recibida');
             $table->timestamps();
         });
     }

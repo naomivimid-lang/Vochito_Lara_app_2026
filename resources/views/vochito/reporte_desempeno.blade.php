@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Reporte de desempeño - Bochito Envíos y Ventas')
+@section('title', 'Reporte de desempeño')
+
+@push('styles')
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="{{ asset('css/miestilos.css') }}" />
+@endpush
 
 @section('content')
   {{-- Carrusel informativo --}}
@@ -28,8 +33,8 @@
     </div>
     <div class="d-flex align-items-center gap-2">
       <span class="badge text-bg-light border px-3 py-2 text-muted">
-        <i class="bi bi-speedometer2 text-teal me-1"></i> Cumplimiento Global: 
-        <strong class="text-teal fs-6" id="kpiEfectividad">{{ isset($reporte) ? $reporte['metricas']['porcentaje_efectividad'] . '%' : '94.6%' }}</strong>
+        <i class="bi bi-speedometer2 text-teal me-1"></i> Cumplimiento Global:
+        <strong class="text-teal fs-6" id="kpiEfectividad">{{ isset($reporte) ? $reporte['metricas']['porcentaje_efectividad'] . '%' : '0%' }}</strong>
       </span>
     </div>
   </div>
@@ -43,7 +48,7 @@
         </div>
         <h6 class="text-muted text-uppercase small fw-bold mb-1">Entregados a tiempo</h6>
         <h2 class="display-6 text-success fw-bold mb-0" id="kpiATiempo">
-          {{ isset($reporte) ? number_format($reporte['metricas']['entregados_a_tiempo']) : '1,180' }}
+          {{ isset($reporte) ? number_format($reporte['metricas']['entregados_a_tiempo']) : '0' }}
         </h2>
         <small class="text-muted">Órdenes puntuales</small>
       </div>
@@ -56,7 +61,7 @@
         </div>
         <h6 class="text-muted text-uppercase small fw-bold mb-1">Retrasados</h6>
         <h2 class="display-6 text-warning fw-bold mb-0" id="kpiRetrasados">
-          {{ isset($reporte) ? number_format($reporte['metricas']['retrasados']) : '52' }}
+          {{ isset($reporte) ? number_format($reporte['metricas']['retrasados']) : '0' }}
         </h2>
         <small class="text-muted">Fuera de tiempo estimado</small>
       </div>
@@ -69,7 +74,7 @@
         </div>
         <h6 class="text-muted text-uppercase small fw-bold mb-1">Cancelados</h6>
         <h2 class="display-6 text-danger fw-bold mb-0" id="kpiCancelados">
-          {{ isset($reporte) ? number_format($reporte['metricas']['cancelados']) : '16' }}
+          {{ isset($reporte) ? number_format($reporte['metricas']['cancelados']) : '0' }}
         </h2>
         <small class="text-muted">Órdenes canceladas</small>
       </div>
@@ -82,7 +87,7 @@
         </div>
         <h6 class="text-muted text-uppercase small fw-bold mb-1">Total Pedidos</h6>
         <h2 class="display-6 text-teal fw-bold mb-0" id="kpiTotal">
-          {{ isset($reporte) ? number_format($reporte['metricas']['total']) : '1,248' }}
+          {{ isset($reporte) ? number_format($reporte['metricas']['total']) : '0' }}
         </h2>
         <small class="text-muted">Total en periodo</small>
       </div>
@@ -90,6 +95,12 @@
   </div>
 
   {{-- Barra de distribución porcentual --}}
+  @php
+    $mTotal = max($reporte['metricas']['total'] ?? 0, 1);
+    $pATiempo = round((($reporte['metricas']['entregados_a_tiempo'] ?? 0) / $mTotal) * 100, 1);
+    $pRetrasados = round((($reporte['metricas']['retrasados'] ?? 0) / $mTotal) * 100, 1);
+    $pCancelados = round((($reporte['metricas']['cancelados'] ?? 0) / $mTotal) * 100, 1);
+  @endphp
   <div class="card p-3 shadow-sm border-0 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-2 small fw-semibold text-muted">
       <span>Distribución de resultados en el periodo</span>
@@ -100,9 +111,9 @@
       </div>
     </div>
     <div class="progress" style="height: 22px;">
-      <div id="barATiempo" class="progress-bar bg-success" role="progressbar" style="width: 94.6%;" title="A tiempo: 94.6%">94.6%</div>
-      <div id="barRetrasados" class="progress-bar bg-warning text-dark" role="progressbar" style="width: 4.2%;" title="Retrasados: 4.2%">4.2%</div>
-      <div id="barCancelados" class="progress-bar bg-danger" role="progressbar" style="width: 1.2%;" title="Cancelados: 1.2%">1.2%</div>
+      <div id="barATiempo" class="progress-bar bg-success" role="progressbar" style="width: {{ $pATiempo }}%;">{{ $pATiempo }}%</div>
+      <div id="barRetrasados" class="progress-bar bg-warning text-dark" role="progressbar" style="width: {{ $pRetrasados }}%;">{{ $pRetrasados }}%</div>
+      <div id="barCancelados" class="progress-bar bg-danger" role="progressbar" style="width: {{ $pCancelados }}%;">{{ $pCancelados }}%</div>
     </div>
   </div>
 
@@ -133,8 +144,8 @@
                 type="date"
                 id="rep-desde"
                 name="desde"
-                class="form-control"
-                value="{{ $desde ?? now()->subMonth()->format('Y-m-d') }}"
+                class="form-control @error('desde') is-invalid @enderror"
+                value="{{ old('desde', $desde ?? now()->subMonth()->format('Y-m-d')) }}"
                 required
               />
               <div class="invalid-feedback">Elige la fecha inicial.</div>
@@ -145,8 +156,8 @@
                 type="date"
                 id="rep-hasta"
                 name="hasta"
-                class="form-control"
-                value="{{ $hasta ?? now()->format('Y-m-d') }}"
+                class="form-control @error('hasta') is-invalid @enderror"
+                value="{{ old('hasta', $hasta ?? now()->addMonth()->format('Y-m-d')) }}"
                 required
               />
               <div class="invalid-feedback">Elige una fecha final igual o posterior a la inicial.</div>
@@ -228,7 +239,7 @@
                 <td><strong class="text-bochito">{{ $p['po'] }}</strong></td>
                 <td>{{ $p['cliente'] }}</td>
                 <td>{{ $p['producto'] }} <small class="text-muted">({{ $p['cantidad'] }})</small></td>
-                <td><small>{{ $p['entrega_estimada'] }}</small></td>
+                <td><small>{{ $p['entrega_estimada'] ?? '—' }}</small></td>
                 <td><small class="text-muted">{{ $p['entrega_real'] ?? '—' }}</small></td>
                 <td><span class="badge text-bg-secondary">{{ $p['estatus'] }}</span></td>
                 <td>
@@ -244,6 +255,13 @@
                 </td>
               </tr>
             @endforeach
+          @else
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">
+                <i class="bi bi-calendar-x fs-3 d-block mb-2"></i>
+                No hay pedidos registrados en el rango de fechas seleccionado.
+              </td>
+            </tr>
           @endif
         </tbody>
       </table>
@@ -275,5 +293,6 @@
 @endsection
 
 @push('scripts')
-  <script src="{{ asset('js/reportes.js') }}?v=2"></script>
+  <script src="{{ asset('js/datos.js') }}?v=3"></script>
+  <script src="{{ asset('js/reportes.js') }}?v=3"></script>
 @endpush

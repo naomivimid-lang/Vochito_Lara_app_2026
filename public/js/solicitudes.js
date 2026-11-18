@@ -1,10 +1,11 @@
 /*
  * solicitudes.js - Gestión integral de cancelaciones y modificaciones de pedidos
- * Sincronizado con Bochito (localStorage) y con los endpoints de Laravel (SolicitudController).
+ * Funciona conectado a PostgreSQL (SolicitudController) con respaldo en localStorage (Bochito).
  */
 document.addEventListener("DOMContentLoaded", () => {
   const formSolicitud = document.getElementById("formSolicitud");
   const avisoSolicitud = document.getElementById("avisoSolicitud");
+  const tablaSolicitudes = document.getElementById("tablaSolicitudes");
   const cuerpoTabla = document.getElementById("cuerpoSolicitudes");
   const filtroEstado = document.getElementById("filtroEstado");
   const contadorSolicitudes = document.getElementById("contadorSolicitudes");
@@ -12,20 +13,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const infoPedido = document.getElementById("infoPedido");
   const EMBARCADO = "En tránsito";
 
+  const dbReady = tablaSolicitudes?.dataset?.dbReady === "1";
+
   // Determinar si esta página es de cancelación o modificación de forma robusta
   const accion = formSolicitud ? (formSolicitud.dataset.accion || "") : "";
   const tipoAtributo = formSolicitud ? (formSolicitud.dataset.tipo || "") : "";
-  const tipoPagina = (tipoAtributo === "modificacion" || accion === "modificar" || accion === "modificacion") 
-    ? "modificacion" 
+  const tipoPagina = (tipoAtributo === "modificacion" || accion === "modificar" || accion === "modificacion")
+    ? "modificacion"
     : "cancelacion";
 
-  // Token CSRF de Laravel
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
 
   function avisar(texto, tipo = "success") {
     if (!avisoSolicitud) return;
-    const icono = tipo === "success" 
-      ? '<i class="bi bi-check-circle-fill me-2 fs-5"></i>' 
+    const icono = tipo === "success"
+      ? '<i class="bi bi-check-circle-fill me-2 fs-5"></i>'
       : (tipo === "danger" ? '<i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>' : '<i class="bi bi-info-circle-fill me-2 fs-5"></i>');
     avisoSolicitud.innerHTML = `<div class="d-flex align-items-center">${icono}<div>${texto}</div></div>`;
     avisoSolicitud.className = `alert alert-${tipo} mb-4 shadow-sm`;
@@ -33,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     avisoSolicitud.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  // Pre-llenar correo si hay sesión activa
+  // Pre-llenar correo si hay sesión activa en prototipo
   const sesion = (typeof Bochito !== "undefined" && Bochito.getSesion) ? Bochito.getSesion() : null;
   const inputEmail = document.getElementById("email") || document.getElementById("mod-email");
   if (sesion && sesion.correo && inputEmail && !inputEmail.value) {
@@ -50,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      if (typeof Bochito !== "undefined" && Bochito.getPedidos) {
+      if (!dbReady && typeof Bochito !== "undefined" && Bochito.getPedidos) {
         const pedido = Bochito.getPedidos().find(p => p.po === val);
         if (pedido) {
           const esEmbarcado = pedido.estatus === EMBARCADO;
@@ -67,40 +69,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Si tiene formato válido pero no está en la lista inicial
-      if (/^[Pp][Oo]-[0-9]{4}-[0-9]{4}$/i.test(val)) {
+      if (/^[Pp][Oo]-([0-9]{4}-)?[0-9]{4}$/i.test(val)) {
         infoPedido.className = "alert alert-secondary p-2 mt-2 mb-0";
         infoPedido.innerHTML = `<i class="bi bi-info-circle me-1"></i> Orden <strong>${val}</strong>: Lista para registrar la solicitud.`;
       } else {
         infoPedido.className = "mt-2 small d-none";
+        infoPedido.innerHTML = "";
       }
     });
   }
 
-  /**
-   * Renderiza las solicitudes registradas en la tabla
-   */
-  function cargarTablaSolicitudes() {
+  function renderizarFilas(solicitudes) {
     if (!cuerpoTabla) return;
 
-    let solicitudes = (typeof Bochito !== "undefined" && Bochito.getSolicitudes) 
-      ? Bochito.getSolicitudes(tipoPagina) 
-      : [];
-
     const estadoSeleccionado = filtroEstado ? filtroEstado.value : "";
-    if (estadoSeleccionado) {
-      solicitudes = solicitudes.filter(s => s.estado === estadoSeleccionado);
-    }
+    const filtradas = estadoSeleccionado
+      ? solicitudes.filter(s => s.estado === estadoSeleccionado)
+      : solicitudes;
 
     if (contadorSolicitudes) {
-      contadorSolicitudes.textContent = solicitudes.length;
+      contadorSolicitudes.textContent = filtradas.length;
     }
 
     cuerpoTabla.innerHTML = "";
-
     const etiquetaNombre = tipoPagina === "cancelacion" ? "cancelación" : "modificación";
 
-    if (solicitudes.length === 0) {
+    if (filtradas.length === 0) {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td colspan="7" class="text-center text-muted py-4">
@@ -112,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    solicitudes.forEach((sol) => {
+    filtradas.forEach((sol) => {
       const tr = document.createElement("tr");
       const badgeClase = (typeof Bochito !== "undefined" && Bochito.COLOR_ESTADO_SOLICITUD)
         ? (Bochito.COLOR_ESTADO_SOLICITUD[sol.estado] || "secondary")
@@ -167,90 +161,124 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Asigna eventos a los botones de acciones de la tabla
+   * Carga las solicitudes desde PostgreSQL o desde localStorage en modo offline
    */
+  async function cargarTablaSolicitudes() {
+    if (!cuerpoTabla) return;
+
+    if (dbReady) {
+      try {
+        const res = await fetch(`/solicitudes?tipo=${tipoPagina}`, {
+          headers: { "Accept": "application/json" }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.solicitudes)) {
+            renderizarFilas(json.solicitudes);
+            return;
+          }
+        }
+      } catch (e) {
+        // Fallback abajo si falla red
+      }
+    }
+
+    const solicitudesLocales = (typeof Bochito !== "undefined" && Bochito.getSolicitudes)
+      ? Bochito.getSolicitudes(tipoPagina)
+      : [];
+    renderizarFilas(solicitudesLocales);
+  }
+
   function asignarEventosAcciones() {
     document.querySelectorAll(".btn-aprobar").forEach(btn => {
       btn.addEventListener("click", () => {
-        const id = btn.dataset.id;
-        actualizarEstadoSolicitud(id, "Aprobada", "Solicitud aprobada por el área administrativa.");
+        actualizarEstadoSolicitud(btn.dataset.id, "Aprobada", "Solicitud aprobada por el área administrativa.");
       });
     });
 
     document.querySelectorAll(".btn-rechazar").forEach(btn => {
       btn.addEventListener("click", () => {
-        const id = btn.dataset.id;
         const motivo = prompt("Motivo del rechazo de la solicitud (opcional):", "No cumple con las políticas de tiempo o embarque.");
         if (motivo !== null) {
-          actualizarEstadoSolicitud(id, "Rechazada", motivo);
+          actualizarEstadoSolicitud(btn.dataset.id, "Rechazada", motivo);
         }
       });
     });
 
     document.querySelectorAll(".btn-cambiar-estado").forEach(btn => {
       btn.addEventListener("click", () => {
-        const id = btn.dataset.id;
-        actualizarEstadoSolicitud(id, "Pendiente", "Solicitud reabierta para revisión.");
+        actualizarEstadoSolicitud(btn.dataset.id, "Pendiente", "Solicitud reabierta para revisión.");
       });
     });
 
     document.querySelectorAll(".btn-eliminar").forEach(btn => {
       btn.addEventListener("click", () => {
-        const id = btn.dataset.id;
-        const po = btn.dataset.po;
-        if (confirm(`¿Estás seguro de que deseas eliminar permanentemente la solicitud para la orden ${po}?`)) {
-          eliminarSolicitud(id);
+        if (confirm(`¿Estás seguro de que deseas eliminar permanentemente la solicitud para la orden ${btn.dataset.po}?`)) {
+          eliminarSolicitud(btn.dataset.id);
         }
       });
     });
   }
 
-  /**
-   * Actualiza el estado de la solicitud en localStorage y backend
-   */
   async function actualizarEstadoSolicitud(id, nuevoEstado, respuestaAdmin = null) {
+    if (dbReady) {
+      try {
+        const res = await fetch(`/solicitudes/${id}/estado`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
+          },
+          body: JSON.stringify({ estado: nuevoEstado, respuesta_admin: respuestaAdmin })
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          return avisar(json.message || "No se pudo actualizar el estado.", "danger");
+        }
+        await cargarTablaSolicitudes();
+        return avisar(`Solicitud #${id} actualizada a <strong>${nuevoEstado}</strong>.`, nuevoEstado === "Aprobada" ? "success" : "warning");
+      } catch (e) {
+        return avisar("Error de conexión al actualizar la solicitud.", "danger");
+      }
+    }
+
     if (typeof Bochito !== "undefined" && Bochito.updateSolicitudEstado) {
       Bochito.updateSolicitudEstado(id, nuevoEstado, respuestaAdmin);
     }
-    cargarTablaSolicitudes();
+    await cargarTablaSolicitudes();
     avisar(`Solicitud #${id} actualizada a <strong>${nuevoEstado}</strong>.`, nuevoEstado === "Aprobada" ? "success" : "warning");
-
-    try {
-      await fetch(`/solicitudes/${id}/estado`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
-        },
-        body: JSON.stringify({ estado: nuevoEstado, respuesta_admin: respuestaAdmin })
-      });
-    } catch (e) {}
   }
 
-  /**
-   * Elimina una solicitud en localStorage y backend
-   */
   async function eliminarSolicitud(id) {
+    if (dbReady) {
+      try {
+        const res = await fetch(`/solicitudes/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Accept": "application/json",
+            ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
+          }
+        });
+        if (!res.ok) {
+          return avisar("No se pudo eliminar la solicitud.", "danger");
+        }
+        await cargarTablaSolicitudes();
+        return avisar(`La solicitud #${id} fue eliminada correctamente.`, "info");
+      } catch (e) {
+        return avisar("Error de conexión al eliminar la solicitud.", "danger");
+      }
+    }
+
     if (typeof Bochito !== "undefined" && Bochito.eliminarSolicitud) {
       Bochito.eliminarSolicitud(id);
     }
-    cargarTablaSolicitudes();
+    await cargarTablaSolicitudes();
     avisar(`La solicitud #${id} fue eliminada correctamente.`, "info");
-
-    try {
-      await fetch(`/solicitudes/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Accept": "application/json",
-          ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
-        }
-      });
-    } catch (e) {}
   }
 
   /**
-   * Envío del formulario de solicitud (registro)
+   * Envío del formulario de solicitud
    */
   if (formSolicitud) {
     formSolicitud.addEventListener("submit", async (e) => {
@@ -271,18 +299,61 @@ document.addEventListener("DOMContentLoaded", () => {
       const commentsInput = document.getElementById("comments") || document.getElementById("changes");
       const comentarios = commentsInput ? commentsInput.value.trim() : "";
 
-      // Regla de negocio: Verificar estatus del pedido
+      if (dbReady) {
+        try {
+          const respuesta = await fetch("/solicitudes", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+              ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
+            },
+            body: JSON.stringify({
+              tipo: tipoPagina,
+              po,
+              email,
+              motivo,
+              comentarios
+            })
+          });
+
+          const json = await respuesta.json().catch(() => ({}));
+          if (!respuesta.ok) {
+            const primerError = json.message || Object.values(json.errors || {})[0]?.[0] || "Error de validación.";
+            return avisar(primerError, "danger");
+          }
+
+          const folio = json.solicitud?.id ? `#${json.solicitud.id}` : "";
+          avisar(
+            `¡Solicitud de ${tipoPagina === 'cancelacion' ? 'cancelación' : 'modificación'} para la orden <strong>${po}</strong> registrada exitosamente ${folio}!`,
+            "success"
+          );
+
+          formSolicitud.reset();
+          formSolicitud.classList.remove("was-validated");
+          if (sesion && sesion.correo && inputEmail) inputEmail.value = sesion.correo;
+          if (infoPedido) {
+            infoPedido.className = "mt-2 small d-none";
+            infoPedido.innerHTML = "";
+          }
+          await cargarTablaSolicitudes();
+          return;
+        } catch (err) {
+          return avisar("No se pudo conectar con el servidor para guardar la solicitud.", "danger");
+        }
+      }
+
+      // Modo offline (sin tabla en BD)
       if (typeof Bochito !== "undefined" && Bochito.getPedidos) {
         const pedido = Bochito.getPedidos().find((p) => p.po === po);
         if (pedido && pedido.estatus === EMBARCADO) {
           return avisar(
-            `El pedido <strong>${po}</strong> ya fue embarcado ("${EMBARCADO}"), por lo que no es posible procesar la solicitud de ${tipoPagina === 'cancelacion' ? 'cancelación' : 'modificación'}.`,
+            `El pedido <strong>${po}</strong> ya fue embarcado ("${EMBARCADO}"), por lo que no es posible procesar la solicitud.`,
             "danger"
           );
         }
       }
 
-      // 1. Guardar solicitud localmente en Bochito (instantáneo)
       let nuevaSolicitud = null;
       if (typeof Bochito !== "undefined" && Bochito.saveSolicitud) {
         nuevaSolicitud = Bochito.saveSolicitud({
@@ -302,43 +373,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       formSolicitud.reset();
       formSolicitud.classList.remove("was-validated");
-
-      // Restaurar correo si hay sesión activa
-      if (sesion && sesion.correo && inputEmail) {
-        inputEmail.value = sesion.correo;
-      }
+      if (sesion && sesion.correo && inputEmail) inputEmail.value = sesion.correo;
       if (infoPedido) {
         infoPedido.className = "mt-2 small d-none";
         infoPedido.innerHTML = "";
       }
-
-      // Actualizar la tabla inmediatamente
-      cargarTablaSolicitudes();
-
-      // 2. Enviar a backend Laravel en segundo plano
-      fetch("/solicitudes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          ...(csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {})
-        },
-        body: JSON.stringify({
-          tipo: tipoPagina,
-          po,
-          email,
-          motivo,
-          comentarios
-        })
-      }).catch(() => {});
+      await cargarTablaSolicitudes();
     });
   }
 
-  // Filtrado de solicitudes por estado
   if (filtroEstado) {
     filtroEstado.addEventListener("change", cargarTablaSolicitudes);
   }
 
-  // Carga inicial de la tabla
   cargarTablaSolicitudes();
 });

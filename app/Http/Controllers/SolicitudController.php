@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSolicitudRequest;
+use App\Http\Requests\UpdateSolicitudRequest;
 use App\Models\Pedido;
 use App\Models\Solicitud;
 use Illuminate\Http\Request;
@@ -11,14 +12,15 @@ use Illuminate\Support\Facades\Schema;
 class SolicitudController extends Controller
 {
     /**
-     * Muestra la vista de cancelación de pedidos con las solicitudes de cancelación registradas.
+     * Muestra la vista de cancelación de pedidos con las solicitudes registradas.
      */
     public function cancelacionView()
     {
-        $solicitudes = [];
+        $solicitudes = collect();
         if (Schema::hasTable('solicitudes')) {
-            $solicitudes = Solicitud::where('tipo', 'cancelacion')
-                ->orderBy('created_at', 'desc')
+            $solicitudes = Solicitud::with('pedido.producto')
+                ->where('tipo', 'cancelacion')
+                ->latest()
                 ->get();
         }
 
@@ -26,14 +28,15 @@ class SolicitudController extends Controller
     }
 
     /**
-     * Muestra la vista de modificación de pedidos con las solicitudes de modificación registradas.
+     * Muestra la vista de modificación de pedidos con las solicitudes registradas.
      */
     public function modificacionView()
     {
-        $solicitudes = [];
+        $solicitudes = collect();
         if (Schema::hasTable('solicitudes')) {
-            $solicitudes = Solicitud::where('tipo', 'modificacion')
-                ->orderBy('created_at', 'desc')
+            $solicitudes = Solicitud::with('pedido.producto')
+                ->where('tipo', 'modificacion')
+                ->latest()
                 ->get();
         }
 
@@ -41,13 +44,15 @@ class SolicitudController extends Controller
     }
 
     /**
-     * Consulta y lista las solicitudes realizadas (filtro opcional por tipo o estado).
+     * Consulta y lista las solicitudes realizadas (filtro opcional por tipo, estado o PO).
      */
     public function index(Request $request)
     {
-        $solicitudes = [];
-        if (Schema::hasTable('solicitudes')) {
-            $query = Solicitud::with('pedido');
+        $dbReady = Schema::hasTable('solicitudes');
+        $solicitudes = collect();
+
+        if ($dbReady) {
+            $query = Solicitud::with('pedido.producto');
 
             if ($request->filled('tipo')) {
                 $query->where('tipo', $request->query('tipo'));
@@ -61,17 +66,17 @@ class SolicitudController extends Controller
                 $query->where('po', 'LIKE', '%' . strtoupper(trim($request->query('po'))) . '%');
             }
 
-            $solicitudes = $query->orderBy('created_at', 'desc')->get();
+            $solicitudes = $query->latest()->get();
         }
 
         if ($request->wantsJson()) {
             return response()->json([
-                'success' => true,
+                'success'     => true,
+                'db_ready'    => $dbReady,
                 'solicitudes' => $solicitudes,
             ]);
         }
 
-        // Si se pide por tipo específico, retornar la vista correspondiente
         if ($request->query('tipo') === 'modificacion') {
             return view('vochito.modificacion', compact('solicitudes'));
         }
@@ -80,136 +85,138 @@ class SolicitudController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Muestra el formulario correspondiente para crear una solicitud.
      */
     public function create(Request $request)
     {
         if ($request->query('tipo') === 'modificacion') {
             return $this->modificacionView();
         }
+
         return $this->cancelacionView();
     }
 
     /**
-     * Registrar una nueva solicitud (cancelación o modificación) con Form Request validado.
+     * Registra una nueva solicitud de cancelación o modificación.
      */
     public function store(StoreSolicitudRequest $request)
     {
         $validated = $request->validated();
         $po = strtoupper(trim($validated['po']));
 
-        // Regla de negocio: Verificar si el pedido ya fue embarcado (En tránsito)
-        if (Schema::hasTable('pedidos')) {
-            $pedido = Pedido::where('po', $po)->first();
-            if ($pedido && $pedido->estatus === 'En tránsito') {
-                $errorMsg = "El pedido {$po} ya se encuentra 'En tránsito', por lo que no es posible procesar la solicitud.";
-                if ($request->wantsJson()) {
-                    return response()->json(['success' => false, 'message' => $errorMsg], 422);
-                }
-                return back()->with('error', $errorMsg)->withInput();
+        $pedido = Schema::hasTable('pedidos') ? Pedido::buscarPorPo($po) : null;
+
+        // Regla de negocio: no se aceptan solicitudes si el pedido ya está En tránsito
+        if ($pedido && $pedido->estatus === 'En tránsito') {
+            $errorMsg = "El pedido {$po} ya se encuentra 'En tránsito', por lo que no es posible procesar la solicitud.";
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $errorMsg], 422);
             }
+
+            return back()->with('error', $errorMsg)->withInput();
         }
 
         if (Schema::hasTable('solicitudes')) {
             $solicitud = Solicitud::create([
-                'tipo' => $validated['tipo'],
-                'po' => $po,
-                'email' => $validated['email'],
-                'motivo' => $validated['motivo'] ?? null,
+                'pedido_id'   => $pedido?->id,
+                'tipo'        => $validated['tipo'],
+                'po'          => $po,
+                'email'       => $validated['email'],
+                'motivo'      => $validated['motivo'] ?? null,
                 'comentarios' => $validated['comentarios'],
-                'estado' => 'Pendiente',
+                'estado'      => 'Pendiente',
             ]);
 
+            $solicitud->load('pedido.producto');
             $mensaje = "Solicitud de {$validated['tipo']} para la orden {$po} registrada exitosamente.";
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => $mensaje,
+                    'success'   => true,
+                    'message'   => $mensaje,
                     'solicitud' => $solicitud,
                 ], 201);
             }
 
-            return back()->with('success', $mensaje);
+            return back()->with('ok', $mensaje);
         }
 
-        // Si la tabla no está creada aún en SQLite/MySQL
         if ($request->wantsJson()) {
             return response()->json([
-                'success' => true,
-                'message' => "Solicitud registrada correctamente para la orden {$po} (modo demo).",
+                'success'   => true,
+                'db_ready'  => false,
+                'message'   => "Solicitud registrada correctamente para la orden {$po} (modo prototipo).",
                 'solicitud' => array_merge($validated, [
-                    'id' => time(),
-                    'po' => $po,
-                    'estado' => 'Pendiente',
+                    'id'         => time(),
+                    'po'         => $po,
+                    'estado'     => 'Pendiente',
                     'created_at' => now()->toIso8601String(),
-                ])
+                ]),
             ]);
         }
 
-        return back()->with('success', "Solicitud registrada correctamente para la orden {$po}.");
+        return back()->with('ok', "Solicitud registrada correctamente para la orden {$po}.");
     }
 
     /**
-     * Display the specified resource.
+     * Muestra el detalle de una solicitud en formato JSON.
      */
     public function show(string $id)
     {
-        $solicitud = Solicitud::with('pedido')->findOrFail($id);
+        $solicitud = Solicitud::with('pedido.producto')->findOrFail($id);
+
         return response()->json(['success' => true, 'solicitud' => $solicitud]);
+    }
+
+    /**
+     * Muestra la vista correspondiente para editar/gestionar la solicitud.
+     */
+    public function edit(string $id)
+    {
+        $solicitud = Solicitud::findOrFail($id);
+
+        return $solicitud->tipo === 'modificacion'
+            ? $this->modificacionView()
+            : $this->cancelacionView();
     }
 
     /**
      * Actualiza el estado de una solicitud (Pendiente, Aprobada, Rechazada).
      */
-    public function updateEstado(Request $request, $id)
+    public function updateEstado(UpdateSolicitudRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'estado' => 'required|in:Pendiente,Aprobada,Rechazada',
-            'respuesta_admin' => 'nullable|string|max:500',
-        ]);
-
         return $this->update($request, $id);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualiza la solicitud en base de datos.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateSolicitudRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'estado' => 'nullable|in:Pendiente,Aprobada,Rechazada',
-            'respuesta_admin' => 'nullable|string|max:500',
-            'motivo' => 'nullable|string|max:150',
-            'comentarios' => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         if (Schema::hasTable('solicitudes')) {
             $solicitud = Solicitud::findOrFail($id);
-            if (isset($validated['estado'])) {
-                $solicitud->estado = $validated['estado'];
-                $solicitud->fecha_resolucion = now();
-            }
-            if (isset($validated['respuesta_admin'])) {
+            $solicitud->estado = $validated['estado'];
+            $solicitud->fecha_resolucion = now();
+
+            if (array_key_exists('respuesta_admin', $validated) && $validated['respuesta_admin'] !== null) {
                 $solicitud->respuesta_admin = $validated['respuesta_admin'];
             }
-            if (isset($validated['motivo'])) {
+            if (array_key_exists('motivo', $validated) && $validated['motivo'] !== null) {
                 $solicitud->motivo = $validated['motivo'];
             }
-            if (isset($validated['comentarios'])) {
+            if (array_key_exists('comentarios', $validated) && $validated['comentarios'] !== null) {
                 $solicitud->comentarios = $validated['comentarios'];
             }
             $solicitud->save();
 
-            // Si se aprueba una cancelación, actualizar estatus del pedido correspondiente
-            if ($solicitud->tipo === 'cancelacion' && $solicitud->estado === 'Aprobada') {
-                if (Schema::hasTable('pedidos')) {
-                    $pedido = Pedido::where('po', $solicitud->po)->first();
-                    if ($pedido) {
-                        $pedido->estatus = 'Cancelado';
-                        $pedido->desempeno = 'cancelado';
-                        $pedido->save();
-                    }
+            // Si se aprueba una cancelación, marcar el pedido asociado como Cancelado
+            if ($solicitud->tipo === 'cancelacion' && $solicitud->estado === 'Aprobada' && Schema::hasTable('pedidos')) {
+                $pedido = $solicitud->pedido ?? Pedido::buscarPorPo($solicitud->po);
+                if ($pedido) {
+                    $pedido->estatus = 'Cancelado';
+                    $pedido->save();
                 }
             }
 
@@ -217,23 +224,23 @@ class SolicitudController extends Controller
 
             if ($request->wantsJson()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => $mensaje,
+                    'success'   => true,
+                    'message'   => $mensaje,
                     'solicitud' => $solicitud,
                 ]);
             }
 
-            return back()->with('success', $mensaje);
+            return back()->with('ok', $mensaje);
         }
 
         return response()->json([
             'success' => true,
-            'message' => "Estado de solicitud actualizado.",
+            'message' => 'Estado de solicitud actualizado.',
         ]);
     }
 
     /**
-     * Elimina o rechaza una solicitud cuando corresponda.
+     * Elimina una solicitud cuando corresponda.
      */
     public function destroy(Request $request, string $id)
     {
@@ -251,12 +258,12 @@ class SolicitudController extends Controller
                 ]);
             }
 
-            return back()->with('success', $mensaje);
+            return back()->with('ok', $mensaje);
         }
 
         return response()->json([
             'success' => true,
-            'message' => "Solicitud eliminada exitosamente.",
+            'message' => 'Solicitud eliminada exitosamente.',
         ]);
     }
 }

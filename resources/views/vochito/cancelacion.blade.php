@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Cancelación de pedidos - Bochito Envíos y Ventas')
+@section('title', 'Cancelación de pedidos')
+
+@push('styles')
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="{{ asset('css/miestilos.css') }}" />
+@endpush
 
 @section('content')
   {{-- Carrusel informativo --}}
@@ -93,7 +98,7 @@
       </div>
       <div class="d-flex align-items-center gap-2">
         <span class="badge bg-teal text-white px-3 py-2 fs-6">
-          Total: <span id="contadorSolicitudes">0</span>
+          Total: <span id="contadorSolicitudes">{{ isset($solicitudes) ? count($solicitudes) : 0 }}</span>
         </span>
         <select id="filtroEstado" class="form-select form-select-sm w-auto">
           <option value="">Todos los estados</option>
@@ -105,7 +110,11 @@
     </div>
 
     <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0" id="tablaSolicitudes">
+      <table
+        class="table table-hover align-middle mb-0"
+        id="tablaSolicitudes"
+        data-db-ready="{{ \Illuminate\Support\Facades\Schema::hasTable('solicitudes') ? '1' : '0' }}"
+      >
         <thead class="table-light">
           <tr>
             <th scope="col" style="width: 80px;">Folio</th>
@@ -125,8 +134,8 @@
                 <td><span class="badge text-bg-light border">{{ $sol->po }}</span></td>
                 <td><small class="text-muted">{{ $sol->email }}</small></td>
                 <td>
-                  <div class="fw-semibold text-truncate" style="max-width: 180px;">{{ $sol->motivo ?? 'Cancelación' }}</div>
-                  <small class="text-muted text-truncate d-block" style="max-width: 220px;">{{ $sol->comentarios }}</small>
+                  <div class="fw-semibold text-truncate" style="max-width: 200px;">{{ $sol->motivo ?? 'Cancelación' }}</div>
+                  <small class="text-muted text-truncate d-block" style="max-width: 230px;">{{ $sol->comentarios }}</small>
                 </td>
                 <td><small>{{ $sol->created_at ? $sol->created_at->format('d/m/Y H:i') : '—' }}</small></td>
                 <td>
@@ -189,5 +198,6 @@
 @endsection
 
 @push('scripts')
-  <script src="{{ asset('js/solicitudes.js') }}?v=2"></script>
+  <script src="{{ asset('js/datos.js') }}?v=3"></script>
+  <script src="{{ asset('js/solicitudes.js') }}?v=3"></script>
 @endpush
