@@ -1,9 +1,9 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IncidenciaController;
 use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\EvidenciaController;
 
 // Página principal
 Route::get('/', function () {
@@ -18,11 +18,23 @@ Route::view('/busquedas', 'vochito.busquedas')->name('vochito.busquedas');
 Route::view('/pedidos', 'vochito.pedidos')->name('vochito.pedidos');
 Route::view('/productos', 'vochito.productos')->name('vochito.productos');
 Route::view('/historial', 'vochito.historial')->name('vochito.historial');
-Route::view('/notificaciones', 'vochito.notificaciones')->name('vochito.notificaciones');
+
+// CRUD de Notificaciones
+Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('vochito.notificaciones');
+Route::post('/notificaciones', [NotificacionController::class, 'store'])->name('notificaciones.store');
+Route::put('/notificaciones/{id}', [NotificacionController::class, 'update'])->name('notificaciones.update');
+Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
+// CRUD de Incidencias
 Route::get('/incidencias', [IncidenciaController::class, 'index'])->name('vochito.incidencias');
 Route::post('/incidencias', [IncidenciaController::class, 'store'])->name('incidencias.store');
 Route::put('/incidencias/{id}', [IncidenciaController::class, 'update'])->name('incidencias.update');
-Route::delete('/incidencias/{id}', [IncidenciaController::class, 'destroy'])->name('incidencias.destroy');Route::view('/evidencias', 'vochito.evidencias')->name('vochito.evidencias');
+Route::delete('/incidencias/{id}', [IncidenciaController::class, 'destroy'])->name('incidencias.destroy');
+// CRUD de Evidencias
+Route::get('/evidencias', [EvidenciaController::class, 'index'])->name('vochito.evidencias');
+Route::post('/evidencias', [EvidenciaController::class, 'store'])->name('evidencias.store');
+Route::put('/evidencias/{id}', [EvidenciaController::class, 'update'])->name('evidencias.update');
+Route::delete('/evidencias/{id}', [EvidenciaController::class, 'destroy'])->name('evidencias.destroy');
+// Otras páginas
 Route::view('/cancelacion', 'vochito.cancelacion')->name('vochito.cancelacion');
 Route::view('/modificacion', 'vochito.modificacion')->name('vochito.modificacion');
 Route::view('/reporte-desempeno', 'vochito.reporte_desempeno')->name('vochito.reporte_desempeno');
@@ -37,8 +49,3 @@ Route::view('/rnf06', 'vochito.RNF06')->name('vochito.rnf06');
 Route::view('/tiempo-respuesta', 'vochito.tiempo_respuesta')->name('vochito.tiempo_respuesta');
 Route::view('/iniciar-sesion', 'vochito.iniciosesion')->name('vochito.iniciosesion');
 Route::view('/indice', 'vochito.index')->name('vochito.index');
-// CRUD de Notificaciones
-Route::get('/notificaciones', [NotificacionController::class, 'index']) ->name('vochito.notificaciones');
-Route::post('/notificaciones', [NotificacionController::class, 'store'])->name('notificaciones.store');
-Route::put('/notificaciones/{id}', [NotificacionController::class, 'update'])->name('notificaciones.update');
-Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
