@@ -66,6 +66,7 @@ Desarrollar una aplicación web con Laravel que permita administrar productos y 
 - Evidencias de entrega.
 - Cancelaciones y modificaciones.
 - Reportes de desempeño.
+- Tiempo de respuesta.
 - Contacto y ayuda.
 - Requerimientos no funcionales.
 
@@ -190,9 +191,14 @@ php artisan serve
 
 Abrir en el navegador:
 
+```text
+http://127.0.0.1:8000
 ```
 
-```
+---
+
+# Participaciones de los integrantes
+
 ## MI PARTE
 
 **Nombre:** Rodrigo Carpio Campos.
@@ -214,24 +220,53 @@ Durante el desarrollo del proyecto VOCHITO – Envíos y Ventas, participé en l
 
 Contribuir al desarrollo de la aplicación mediante la implementación de funcionalidades de autenticación y administración de usuarios, aplicando el patrón MVC de Laravel, las operaciones CRUD y el uso de Git para el control de versiones.
 
-## Capturas de pantalla de MIAS
+### Capturas de pantalla de MIAS
 
-### Página principal
+#### Página principal
 
 ![Página principal](public/img/HG1.png)
 
 ![Página principal](public/img/HHG2.png)
 
-
 ---
 
 ## Módulo de Cancelaciones, Modificaciones y Reportes
 
-**Nombre:** Lorenzana Hernández Aarón Dahir
+**Nombre:** Lorenzana Hernández Aarón Dahir.
 
 ### Actividades desarrolladas
 
 - **Cancelaciones y modificaciones (`/cancelacion`, `/modificacion`):** registro, consulta, filtrado por estado, aprobación, rechazo y eliminación de solicitudes mediante `SolicitudController`, usando un formulario reutilizable (`partials/form_solicitud.blade.php`) integrado al layout principal (`layouts/app.blade.php`).
-- **Validaciones y regla de negocio:** validación en el servidor con `StoreSolicitudRequest` y `UpdateSolicitudRequest`; bloqueo de solicitudes cuando el pedido ya está en estatus *En tránsito* y cambio automático del pedido a *Cancelado* al aprobar una cancelación.
+- **Validaciones y regla de negocio:** validación en el servidor con `StoreSolicitudRequest` y `UpdateSolicitudRequest`; bloqueo de solicitudes cuando el pedido ya está en estatus _En tránsito_ y cambio automático del pedido a _Cancelado_ al aprobar una cancelación.
 - **Reporte de desempeño (`/reporte-desempeno`):** cálculo de pedidos entregados a tiempo, retrasados y cancelados por rango de fechas mediante `ReporteController` y `GenerarReporteRequest`.
 - **Base de datos y rutas:** migración `solicitudes` con relación `belongsTo` / `hasMany` hacia `Pedido` (`pedido_id`), rutas RESTful con `Route::resource()` y datos de prueba en `SolicitudSeeder`.
+
+---
+
+## Mi participación: Integración del apartado Tiempo de respuesta
+
+**Nombre:** Geazul Guadalupe Ortiz Salguero.
+
+### Actividades desarrolladas
+
+Durante el desarrollo del proyecto VOCHITO – Envíos y Ventas, participé en la integración del acceso al apartado de Tiempo de respuesta dentro de la interfaz principal del sistema.
+
+Las actividades realizadas fueron:
+
+- **Integración del botón:** incorporación de la opción Tiempo de respuesta en el menú desplegable de Pedidos.
+- **Navegación de la interfaz:** organización del acceso para que los usuarios puedan localizar y abrir el apartado desde la pantalla principal.
+- **Vinculación de rutas:** conexión de la opción del menú con la ruta `vochito.tiempo_respuesta`.
+- **Integración de la vista Blade:** vinculación del acceso con la vista `tiempo_respuesta.blade.php`.
+- **Organización de la interfaz:** mejora de la navegación del sistema mediante la incorporación de una opción dentro del menú de Pedidos.
+
+### Objetivo de mi participación
+
+Facilitar el acceso al apartado de Tiempo de respuesta mediante su integración en el menú desplegable de Pedidos, mejorando la organización y navegación de la interfaz del sistema.
+
+### Aportación al proyecto
+
+Mi contribución se enfocó en la navegación de la aplicación web y la integración de una nueva opción en la interfaz principal, utilizando las rutas de Laravel y las vistas Blade para conectar los elementos visuales con las secciones correspondientes del sistema.
+
+![Menú de pedidos](public/img/menu.jpeg)
+
+![Tiempo de respuesta](public/img/Tiemporespuesta.jpeg)
