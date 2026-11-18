@@ -18,12 +18,22 @@ class DatabaseSeeder extends Seeder
             SolicitudSeeder::class,
         ]);
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name'     => 'Test User',
-                'password' => bcrypt('password123'),
-            ]
-        );
+        // Usuarios de prueba para la demostración (contraseña de ejemplo, no usar en producción)
+        if (!User::where('email', 'admin@bochito.test')->exists()) {
+            User::factory()->create([
+                'name' => 'Administrador Bochito',
+                'email' => 'admin@bochito.test',
+                'password' => 'bochito2026',
+                'is_admin' => true,
+            ]);
+        }
+
+        if (!User::where('email', 'cliente@bochito.test')->exists()) {
+            User::factory()->create([
+                'name' => 'Cliente de prueba',
+                'email' => 'cliente@bochito.test',
+                'password' => 'bochito2026',
+            ]);
+        }
     }
 }
