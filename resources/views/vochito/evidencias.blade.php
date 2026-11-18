@@ -1,5 +1,4 @@
-﻿
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
@@ -76,13 +75,13 @@
                         <ul class="dropdown-menu dropdown-menu-end">
 
                             <li>
-                                <a class="dropdown-item" href="{{ route('vochito.pedidos') }}">
+                                <a class="dropdown-item" href="{{ route('pedidos.create') }}">
                                     <i class="fa-solid fa-file-circle-plus fa-fw"></i> Registrar pedido
                                 </a>
                             </li>
 
                             <li>
-                                <a class="dropdown-item" href="{{ route('vochito.productos') }}">
+                                <a class="dropdown-item" href="{{ route('pedidos.index') }}">
                                     <i class="fa-solid fa-list-check fa-fw"></i> Estatus y búsqueda
                                 </a>
                             </li>
@@ -336,7 +335,7 @@
                                     </td>
 
                                     <td class="text-center">
-                                        <a href="{{ asset('storage/' . $evidencia->foto) }}" target="_blank">
+                                        <a href="{{ asset('storage/' . $evidencia->foto) }}" target="_blank" rel="noopener noreferrer">
                                             <img
                                                 src="{{ asset('storage/' . $evidencia->foto) }}"
                                                 alt="Fotografía de entrega"
@@ -472,7 +471,7 @@
                                                             name="comentarios"
                                                             rows="2"
                                                             maxlength="1000"
-                                                        >{{ $evidencia->comentarios }}</textarea>
+                                                        >{{ old('comentarios', $evidencia->comentarios) }}</textarea>
                                                     </div>
 
                                                     <div class="col-12 mb-3">

@@ -54,11 +54,19 @@ class EvidenciaController extends Controller
             'comentarios' => 'nullable|string|max:1000',
         ]);
 
+        // Guardar la nueva fotografía antes de eliminar la anterior
         if ($request->hasFile('foto')) {
-            Storage::disk('public')->delete($evidencia->foto);
+            $rutaAnterior = $evidencia->foto;
 
-            $rutaFoto = $request->file('foto')->store('evidencias', 'public');
-            $evidencia->foto = $rutaFoto;
+            $rutaNueva = $request->file('foto')->store('evidencias', 'public');
+
+            if ($rutaNueva) {
+                $evidencia->foto = $rutaNueva;
+
+                if ($rutaAnterior) {
+                    Storage::disk('public')->delete($rutaAnterior);
+                }
+            }
         }
 
         $evidencia->orden_compra = strtoupper($request->orden_compra);
@@ -77,7 +85,12 @@ class EvidenciaController extends Controller
     {
         $evidencia = Evidencia::findOrFail($id);
 
-        Storage::disk('public')->delete($evidencia->foto);
+        // Eliminar la fotografía del almacenamiento
+        if ($evidencia->foto) {
+            Storage::disk('public')->delete($evidencia->foto);
+        }
+
+        // Eliminar el registro
         $evidencia->delete();
 
         return redirect()->route('vochito.evidencias')
