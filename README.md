@@ -157,4 +157,105 @@ Puedes ver la lista completa con `php artisan route:list`.
 
 ![Imagen del proyecto](<Captura de pantalla 2026-11-04 145333.png>)
 
-**Vochito Laravel – Proyecto académico 2026.**
+### 4. Configurar el archivo de entorno
+
+En PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 5. Generar la clave de Laravel
+
+```bash
+php artisan key:generate
+```
+
+### 6. Configurar PostgreSQL
+
+Crear una base de datos y configurar las credenciales correspondientes en el archivo `.env`.
+
+Ejemplo:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=laravel
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
+```
+
+### 7. Ejecutar las migraciones y los datos de prueba
+
+```bash
+php artisan migrate --seed
+```
+
+### 8. Iniciar el servidor
+
+```bash
+php artisan serve
+```
+
+Abrir en el navegador:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+## Aportaciones de Guerrero López Miguel Ángel
+
+### Issue #3 (Miguel): Pedidos y productos (CRUD principal)
+
+**Interfaces trabajadas:**
+
+- `pedidos/` (`index`, `create`, `edit` y `_form`), que reemplaza a `pedidos.blade.php`
+- `productos/` (`index`, `create`, `edit` y `_form`), que reemplaza a `productos.blade.php`
+- `catalogo.blade.php`
+
+**Actividades realizadas:**
+
+- Registro de pedidos con el producto elegido de una lista de productos activos. Todo pedido inicia con el estatus "Orden recibida".
+- Consulta de los pedidos registrados con número de orden (`PO-0001`) y filtros por cliente, estatus y rango de fechas de entrega.
+- Modificación de pedidos con el formulario precargado, incluida la fecha de entrega y el estatus.
+- Cancelación (eliminación) de pedidos con confirmación antes de borrar.
+- Registro y consulta de productos, con búsqueda por nombre.
+- Modificación y eliminación de productos. Regla de negocio: no se puede eliminar un producto que tiene pedidos; se muestra un mensaje controlado en lugar de un error.
+- Actualización rápida del estatus del pedido desde la tabla, con un color por cada estatus.
+- Validación de cantidades (de 1 a 1000), fechas (la entrega debe ser futura al registrar) y datos obligatorios. Los errores aparecen bajo cada campo y se conservan los datos escritos.
+- Catálogo en tarjetas con los productos activos leídos de PostgreSQL.
+
+**Controladores:** `PedidoController.php` y `ProductoController.php`.
+
+### Issue #15 (Miguel2): Base de datos, validaciones y paginación
+
+- **Migraciones:** tablas `productos` (`2026_11_17_001831_create_productos_table.php`) y `pedidos` (`2026_11_17_001838_create_pedidos_table.php`). El nombre del producto es único, el precio es decimal y el stock no puede ser negativo.
+- **Modelos y relaciones:** un `Producto` tiene muchos `Pedidos` (`hasMany`) y cada `Pedido` pertenece a un `Producto` (`belongsTo` por `producto_id`). La llave foránea usa `restrictOnDelete()` para no dejar pedidos sin producto.
+- **Validaciones de formularios** con Form Requests y mensajes en español:
+  `StoreProductoRequest`, `UpdateProductoRequest`, `StorePedidoRequest`, `UpdatePedidoRequest` y `ActualizarEstatusRequest`.
+- **Paginación** de 10 registros con estilo Bootstrap 5 en productos y pedidos, que conserva la búsqueda y los filtros al cambiar de página.
+- **Rutas RESTful** con `Route::resource()` para `productos` y `pedidos`, y una ruta `PATCH` para el estatus.
+- **Layout y formularios reutilizables:**
+  - `layouts/app.blade.php` (menú, encabezado y pie comunes) y `partials/flash.blade.php` (mensajes de éxito y error).
+  - `productos/_form.blade.php` y `pedidos/_form.blade.php` (el mismo formulario para crear y editar).
+- **Seeder** con datos de prueba (`ProductoSeeder.php`, que crea los 10 productos del catálogo con un pedido cada uno, integrado en `DatabaseSeeder.php`).
+- **Configuración:** `.env.example` para PostgreSQL sin contraseña y corrección del modo oscuro (`public/css/tema.css`).
+
+### Integración de ramas del equipo
+
+Se resolvieron los conflictos para poder integrar en `main` las ramas de varios integrantes:
+
+- **PR #20 (`Vochito_Laravel_MAGL`):** CRUD de productos y pedidos, junto con incidencias, notificaciones y evidencias.
+- **PR #18 (`ActuRodrigo`):** se completaron el inicio de sesión, el registro, el cierre de sesión, la columna `is_admin`, el middleware `admin` y la administración de usuarios.
+- **PR #21 (`feature/consultas/Geazul`):** el módulo de consultas (búsquedas, historial y tiempo de respuesta) se adaptó a la tabla `pedidos`, sin migraciones duplicadas.
+
+### Ejecución de migraciones y datos de prueba
+
+Después de configurar la base de datos en el archivo `.env`:
+
+```bash
+php artisan migrate --seed
+```
